@@ -16,6 +16,7 @@ import (
 	"github.com/DanArmor/vtuber-go/pkg/setup"
 	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
+	"github.com/watsonindustries/go-holodex"
 )
 
 type Options struct {
@@ -43,6 +44,18 @@ func main() {
 	if err != nil {
 		panic("Can't load config")
 	}
+
+	holodexConfig := holodex.NewConfiguration()
+	holodexConfig.DefaultHeader["X-APIKEY"] = config.HolodexApiKey
+	holodexConfig.UserAgent = "Vtuber-Go"
+
+	service := controllers.NewService(
+		setup.MustDatabaseSetup(config.DriverName, config.SqlUrl),
+		config.TgBotToken,
+		config.ExpirationHours,
+		holodex.NewAPIClient(holodexConfig),
+	)
+
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware)
 	router.SetTrustedProxies([]string{defaultTrustedProxy})
@@ -53,10 +66,12 @@ func main() {
 	}
 	base := getBaseRouter(router, config.BasePath)
 
-	service := controllers.NewService(setup.MustDatabaseSetup(config.DriverName, config.SqlUrl), config.TgBotToken, config.ExpirationHours)
-
 	api := base.Group("/api")
 	api.POST("/search", service.SearchVtubers)
+	api.GET("/orgs", service.GetOrgs)
+
+	admin := api.Group("/admin")
+	admin.POST("/vtubers")
 
 	// Start server
 	go func() {

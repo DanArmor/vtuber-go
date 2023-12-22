@@ -16,8 +16,10 @@ import (
 func (s *Service) GetOrgs(c *gin.Context) {
 	orgs, err := s.Db.Org.Query().WithWaves().All(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
-		return
+		if !ent.IsNotFound(err) {
+			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
+			return
+		}
 	}
 	c.JSON(http.StatusOK, resp.HandlerResult(gin.H{"orgs": orgs}))
 }

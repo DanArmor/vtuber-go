@@ -10,6 +10,8 @@ type Config struct {
 	SqlUrl          string `mapstructure:"sql_url"`
 	TgBotToken      string `mapstructure:"tg_bot_token"`
 	ExpirationHours int    `mapstructure:"expiration_hours"`
+	AdminToken      string `mapstructure:"admin_token"`
+	HolodexApiKey   string `mapstructure:"holodex_api_key"`
 }
 
 func LoadConfig(configPath string) (c Config, err error) {

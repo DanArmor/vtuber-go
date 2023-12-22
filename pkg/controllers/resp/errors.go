@@ -7,6 +7,7 @@ const (
 	ErrCodeUserAlreadyExists = 100
 	ErrCodeNoSuchUser        = 101
 	ErrCodeWrongPass         = 102
+	ErrCodeWrongAdminToken   = 103
 	// 2xx - Input errors
 	ErrCodeCantBindJsonBody     = 200
 	ErrCodeCantBindQueryBody    = 201
