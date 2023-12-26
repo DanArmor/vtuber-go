@@ -44,7 +44,7 @@ func CheckIntegrityInitData(values url.Values, token string, expirationHours int
 	if authDate.IsZero() {
 		return errors.New("authDate is zero")
 	}
-	if authDate.Add(time.Duration(expirationHours)).Before(time.Now()) {
+	if authDate.Add(time.Hour * time.Duration(expirationHours)).Before(time.Now()) {
 		return errors.New("authDate expired")
 	}
 	sort.Strings(pairs)
