@@ -75,7 +75,11 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		)
 	}
 
-	vtubers, err := query.All(c.Request.Context())
+	vtubers, err := query.
+		WithWave(func(wq *ent.WaveQuery) {
+			wq.WithOrg()
+		}).
+		All(c.Request.Context())
 	if err != nil {
 		if !ent.IsNotFound(err) {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
