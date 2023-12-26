@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/DanArmor/vtuber-go/pkg/auth"
 	"github.com/DanArmor/vtuber-go/pkg/config"
 	"github.com/DanArmor/vtuber-go/pkg/controllers"
 	"github.com/DanArmor/vtuber-go/pkg/middleware"
@@ -49,11 +50,17 @@ func main() {
 	holodexConfig.DefaultHeader["X-APIKEY"] = config.HolodexApiKey
 	holodexConfig.UserAgent = "Vtuber-Go"
 
+	jwt, err := auth.NewJwtMaker(config.JwtSecretKey)
+	if err != nil {
+		panic("Can't create token maker")
+	}
+
 	service := controllers.NewService(
 		setup.MustDatabaseSetup(config.DriverName, config.SqlUrl),
 		config.TgBotToken,
 		config.ExpirationHours,
 		holodex.NewAPIClient(holodexConfig),
+		jwt,
 	)
 
 	router := gin.Default()
