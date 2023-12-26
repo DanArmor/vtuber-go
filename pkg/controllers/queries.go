@@ -37,7 +37,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		return
 	}
 
-	initData := getInitData(c)
+	initData := getTokenPayload(c).InitData
 
 	query := s.Db.Vtuber.Query()
 	if input.Name != "" {
