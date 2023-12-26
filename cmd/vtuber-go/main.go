@@ -81,6 +81,7 @@ func main() {
 		protectedApi.Use(service.CheckToken)
 	}
 	protectedApi.POST("/search", service.SearchVtubers)
+	protectedApi.POST("/select", service.SelectVtuber)
 	protectedApi.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
