@@ -50,7 +50,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 
 	query := s.Db.Vtuber.Query()
 	if input.Name != "" {
-		query.Where(vtuber.EnglishNameContains(input.Name))
+		query.Where(vtuber.EnglishNameContainsFold(input.Name))
 	}
 	if len(input.Org) != 0 {
 		query.Where(
