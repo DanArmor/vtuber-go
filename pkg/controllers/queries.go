@@ -32,7 +32,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		Org      []int             `json:"orgs"`
 		Wave     []int             `json:"waves"`
 		Selected selected.Selected `json:"selected"`
-		Page     int               `json:"page" binding:"required"`
+		Page     *int              `json:"page" binding:"required"`
 		PageSize int               `json:"page_size" binding:"required"`
 	}
 	var input SearchVtubersInput
@@ -89,7 +89,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 			wq.WithOrg()
 		}).
 		Limit(input.PageSize).
-		Offset(input.PageSize * input.Page).
+		Offset(input.PageSize * *input.Page).
 		All(c.Request.Context())
 	if err != nil {
 		if !ent.IsNotFound(err) {
