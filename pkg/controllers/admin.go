@@ -81,6 +81,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			SetInactive(input.Vtubers[i].Inactive).
 			SetTwitch(input.Vtubers[i].Twitch).
 			SetBannerURL(input.Vtubers[i].BannerURL).
+			SetDescription(input.Vtubers[i].Description).
 			SetWave(vtuberWave).
 			Save(context.Background())
 		if err != nil {

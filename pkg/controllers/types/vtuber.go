@@ -13,6 +13,7 @@ type Vtuber struct {
 	Inactive         bool     `json:"inactive,omitempty"`
 	Twitch           string   `json:"twitch,omitempty"`
 	BannerURL        string   `json:"banner,omitempty"`
+	Description      string   `json:"description,omitempty"`
 	WaveName         string   `json:"group,omitempty"`
 	CompanyName      string   `json:"org,omitempty"`
 }

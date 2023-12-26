@@ -24,6 +24,7 @@ func (Vtuber) Fields() []ent.Field {
 		field.Int("subscriber_count").Optional(),
 		field.Int("clip_count").Optional(),
 		field.Strings("top_topics").Optional(),
+		field.String("description").Optional(),
 		field.Bool("inactive"),
 		field.String("twitch").Optional(),
 	}
