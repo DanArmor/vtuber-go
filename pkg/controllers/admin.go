@@ -69,6 +69,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 		}
 
 		new_vtuber, err := s.Db.Vtuber.Create().
+			SetYoutubeChannelID(input.Vtubers[i].YoutubeChannelId).
 			SetChannelName(input.Vtubers[i].ChannelName).
 			SetEnglishName(input.Vtubers[i].EnglishName).
 			SetPhotoURL(input.Vtubers[i].PhotoURL).

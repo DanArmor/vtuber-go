@@ -15,6 +15,7 @@ type Vtuber struct {
 func (Vtuber) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("channel_name"),
+		field.String("youtube_channel_id"),
 		field.String("english_name").Optional(),
 		field.String("photo_url").Optional(),
 		field.String("banner_url").Optional(),
