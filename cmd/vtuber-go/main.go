@@ -71,7 +71,7 @@ func main() {
 	api.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
-	admin.POST("/vtubers")
+	admin.POST("/vtubers", service.PostVtubers)
 
 	// Start server
 	go func() {
