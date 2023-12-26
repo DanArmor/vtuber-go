@@ -74,8 +74,12 @@ func main() {
 	base := getBaseRouter(router, config.BasePath)
 
 	api := base.Group("/api")
-	api.POST("/search", service.SearchVtubers)
-	api.GET("/orgs", service.GetOrgs)
+	api.GET("/auth", service.AuthUser)
+
+	protectedApi := api.Group("")
+	protectedApi.Use(service.CheckToken)
+	protectedApi.POST("/search", service.SearchVtubers)
+	protectedApi.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
 	admin.Use(middleware.AdminVerify(config.AdminToken))
