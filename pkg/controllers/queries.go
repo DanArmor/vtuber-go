@@ -46,7 +46,8 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		return
 	}
 
-	initData := getTokenPayload(c).InitData
+	payload := getTokenPayload(c)
+	userId := payload.UserId
 
 	query := s.Db.Vtuber.Query()
 	if input.Name != "" {
@@ -71,22 +72,24 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 	if input.Selected == selected.Yes {
 		query.Where(
 			vtuber.HasUsersWith(
-				user.TgIDEQ(initData.User.Id),
+				user.IDEQ(userId),
 			),
 		)
 	} else if input.Selected == selected.No {
 		query.Where(
 			vtuber.Not(
 				vtuber.HasUsersWith(
-					user.TgIDEQ(initData.User.Id),
+					user.IDEQ(userId),
 				),
 			),
 		)
 	}
-
 	vtubers, err := query.
 		WithWave(func(wq *ent.WaveQuery) {
 			wq.WithOrg()
+		}).
+		WithUsers(func(uq *ent.UserQuery) {
+			uq.Where(user.IDEQ(userId)).IDs(c.Request.Context())
 		}).
 		Limit(input.PageSize).
 		Offset(input.PageSize * *input.Page).
