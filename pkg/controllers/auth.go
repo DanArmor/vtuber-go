@@ -29,12 +29,12 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 
-	exists, err := s.Db.User.Query().Where(user.TgID(input.User.Id)).Exist(context.Background())
+	id, err := s.Db.User.Query().Where(user.TgID(input.User.Id)).FirstID(context.Background())
 	if err != nil && !ent.IsNotFound(err) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"))
 		return
 	}
-	if !exists {
+	if id == 0 {
 		err := s.Db.User.Create().
 			SetTgID(input.User.Id).
 			SetFirstName(input.User.FirstName).
@@ -49,6 +49,7 @@ func (s *Service) AuthUser(c *gin.Context) {
 	}
 	token, _, err := s.TokenMaker.CreateToken(
 		input,
+		id,
 		time.Duration(s.ExpirationHours),
 	)
 	if err != nil {

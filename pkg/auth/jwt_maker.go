@@ -27,8 +27,8 @@ func NewJwtMaker(secretKey string) (Maker, error) {
 }
 
 // CreateToken creates a new token for a specific username and duration
-func (m *JwtMaker) CreateToken(initData types.InitData, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(initData, duration)
+func (m *JwtMaker) CreateToken(initData types.InitData, userId int, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(initData, userId, duration)
 	if err != nil {
 		return "", payload, err
 	}

@@ -12,17 +12,19 @@ import (
 type Payload struct {
 	jwt.StandardClaims
 	Id       uuid.UUID      `json:"id"`
+	UserId   int            `json:"user_id"`
 	InitData types.InitData `json:"init_data"`
 }
 
 // NewPayload creates a new token payload with a specific username and duration
-func NewPayload(initData types.InitData, duration time.Duration) (*Payload, error) {
+func NewPayload(initData types.InitData, userId int, duration time.Duration) (*Payload, error) {
 	tokenId, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 	payload := &Payload{
 		Id:       tokenId,
+		UserId:   userId,
 		InitData: initData,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
