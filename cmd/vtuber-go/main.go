@@ -71,6 +71,7 @@ func main() {
 	api.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
+	admin.Use(middleware.AdminVerify(config.AdminToken))
 	admin.POST("/vtubers", service.PostVtubers)
 
 	// Start server
