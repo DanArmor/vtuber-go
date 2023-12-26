@@ -1,3 +1,4 @@
-h1:QfDxw6Rk2l3H+7gxGqhNHnRIXw9EJwWmmhD6ZyRoCwA=
+h1:ufgEYLp0d+PVTaZ8wp52+m/y7MaLAok6Z5lstsR87NM=
 20231222192235_init_schema.sql h1:DmvZCFqzC0Rg5ebh9MncpE2V7wzpUOMpoKt44fCe0nc=
 20231226102412_vtuber_banner_url_added.sql h1:zmpBmnUILTU1gSjpdQHroFKkaQoOyYHcnBNRL/oJ+/M=
+20231226114953_user_tg_id_is_unique.sql h1:wm+J1JW0f0k37kOo46ehd8/gx4ir856Mrfrv5n0f7X4=
