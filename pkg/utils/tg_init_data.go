@@ -32,7 +32,7 @@ func CheckIntegrityInitData(values url.Values, token string, expirationHours int
 			continue
 		}
 		if k == "auth_date" {
-			if i, err := strconv.Atoi(v[0]); err != nil {
+			if i, err := strconv.Atoi(v[0]); err == nil {
 				authDate = time.Unix(int64(i), 0)
 			}
 		}
