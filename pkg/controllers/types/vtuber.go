@@ -1,9 +1,9 @@
 package types
 
 type Vtuber struct {
-	ChannelName     string   `json:"channel_name,omitempty"`
+	ChannelName     string   `json:"name,omitempty"`
 	EnglishName     string   `json:"english_name,omitempty"`
-	PhotoURL        string   `json:"photo_url,omitempty"`
+	PhotoURL        string   `json:"photo,omitempty"`
 	Twitter         string   `json:"twitter,omitempty"`
 	VideoCount      int      `json:"video_count,omitempty"`
 	SubscriberCount int      `json:"subscriber_count,omitempty"`
@@ -11,6 +11,7 @@ type Vtuber struct {
 	TopTopics       []string `json:"top_topics,omitempty"`
 	Inactive        bool     `json:"inactive,omitempty"`
 	Twitch          string   `json:"twitch,omitempty"`
-	WaveName        string   `json:"wave_name,omitempty"`
-	CompanyName     string   `json:"company_name,omitempty"`
+	BannerURL       string   `json:"banner,omitempty"`
+	WaveName        string   `json:"group,omitempty"`
+	CompanyName     string   `json:"org,omitempty"`
 }
