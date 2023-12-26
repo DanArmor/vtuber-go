@@ -17,6 +17,7 @@ func (Vtuber) Fields() []ent.Field {
 		field.String("channel_name"),
 		field.String("english_name").Optional(),
 		field.String("photo_url").Optional(),
+		field.String("banner_url").Optional(),
 		field.String("twitter").Optional(),
 		field.Int("video_count").Optional(),
 		field.Int("subscriber_count").Optional(),
