@@ -10,6 +10,7 @@ type Config struct {
 	SqlUrl          string `mapstructure:"sql_url"`
 	TgBotToken      string `mapstructure:"tg_bot_token"`
 	ExpirationHours int    `mapstructure:"expiration_hours"`
+	JwtSecretKey    string `mapstructure:"jwt_secret_key"`
 	AdminToken      string `mapstructure:"admin_token"`
 	HolodexApiKey   string `mapstructure:"holodex_api_key"`
 }
