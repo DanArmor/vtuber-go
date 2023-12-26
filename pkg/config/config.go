@@ -13,6 +13,7 @@ type Config struct {
 	JwtSecretKey    string `mapstructure:"jwt_secret_key"`
 	AdminToken      string `mapstructure:"admin_token"`
 	HolodexApiKey   string `mapstructure:"holodex_api_key"`
+	IsDebug         bool   `mapstructure:"debug"`
 }
 
 func LoadConfig(configPath string) (c Config, err error) {

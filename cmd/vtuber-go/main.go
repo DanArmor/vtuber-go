@@ -77,12 +77,16 @@ func main() {
 	api.GET("/auth", service.AuthUser)
 
 	protectedApi := api.Group("")
-	protectedApi.Use(service.CheckToken)
+	if !config.IsDebug {
+		protectedApi.Use(service.CheckToken)
+	}
 	protectedApi.POST("/search", service.SearchVtubers)
 	protectedApi.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
-	admin.Use(middleware.AdminVerify(config.AdminToken))
+	if !config.IsDebug {
+		admin.Use(middleware.AdminVerify(config.AdminToken))
+	}
 	admin.POST("/vtubers", service.PostVtubers)
 
 	// Start server
