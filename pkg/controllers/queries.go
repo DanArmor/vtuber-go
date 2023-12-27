@@ -32,8 +32,8 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		Org      []int             `json:"orgs"`
 		Wave     []int             `json:"waves"`
 		Selected selected.Selected `json:"selected"`
-		Page     *int              `json:"page" binding:"required"`
-		PageSize int               `json:"page_size" binding:"required"`
+		Offset   *int              `json:"offset" binding:"required"`
+		Limit    int               `json:"page_size" binding:"required"`
 	}
 	var input SearchVtubersInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -41,7 +41,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		return
 	}
 
-	if input.PageSize < MinPageSize || input.PageSize > MaxPageSize {
+	if input.Limit < MinPageSize || input.Limit > MaxPageSize {
 		c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeCantBindJsonBody, "Page size is incorrect"))
 		return
 	}
@@ -91,8 +91,8 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		WithUsers(func(uq *ent.UserQuery) {
 			uq.Where(user.IDEQ(userId)).IDs(c.Request.Context())
 		}).
-		Limit(input.PageSize).
-		Offset(input.PageSize * *input.Page).
+		Limit(input.Limit).
+		Offset(*input.Offset).
 		All(c.Request.Context())
 	if err != nil {
 		if !ent.IsNotFound(err) {
@@ -103,8 +103,8 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 	c.JSON(http.StatusOK, resp.HandlerResult(gin.H{
 		"vtubers": vtubers,
 		"page_meta": gin.H{
-			"page":           input.Page,
-			"page_size_req":  input.PageSize,
+			"offset":         input.Offset,
+			"page_size_req":  input.Limit,
 			"page_size_resp": len(vtubers),
 		},
 	}))
