@@ -14,6 +14,8 @@ type Config struct {
 	AdminToken      string `mapstructure:"admin_token"`
 	HolodexApiKey   string `mapstructure:"holodex_api_key"`
 	IsDebug         bool   `mapstructure:"debug"`
+	TimeNotifyAfter int    `mapstructure:"time_notify_after"`
+	TimeStep        int    `mapstructure:"time_step"`
 }
 
 func LoadConfig(configPath string) (c Config, err error) {

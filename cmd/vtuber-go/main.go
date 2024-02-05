@@ -59,6 +59,8 @@ func main() {
 		setup.MustDatabaseSetup(config.DriverName, config.SqlUrl),
 		config.TgBotToken,
 		config.ExpirationHours,
+		config.TimeNotifyAfter,
+		config.TimeStep,
 		holodex.NewAPIClient(holodexConfig),
 		jwt,
 	)
@@ -96,7 +98,7 @@ func main() {
 			log.Printf("Listen: %s\n", err)
 		}
 	}()
-
+	go service.SchedulerGo()
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGUSR1, syscall.SIGTERM, syscall.SIGINT)
 	<-quit

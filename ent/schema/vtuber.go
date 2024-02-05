@@ -35,5 +35,6 @@ func (Vtuber) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("wave", Wave.Type).Ref("vtubers").Required().Unique(),
 		edge.From("users", User.Type).Ref("vtubers"),
+		edge.To("repoted_streams", ReportedStream.Type),
 	}
 }
