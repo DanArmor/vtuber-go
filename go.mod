@@ -1,6 +1,6 @@
 module github.com/DanArmor/vtuber-go
 
-replace github.com/watsonindustries/go-holodex v0.0.1-beta.1 => ./third_party/go-holodex
+// replace github.com/watsonindustries/go-holodex v0.0.1-beta.1 => ./third_party/go-holodex
 
 go 1.21.5
 

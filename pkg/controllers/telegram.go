@@ -43,7 +43,7 @@ func (s *Service) NotifyUsers() {
 			continue
 		}
 		if now.Add(time.Duration(s.TimeNotifyAfter) * time.Minute).After(*videos[i].AvailableAt) {
-			if videos[i].Channel.Id == nil {
+			if videos[i].ChannelId == nil {
 				log.Printf("Notify nil Channel.ID")
 				continue
 			}
@@ -56,14 +56,14 @@ func (s *Service) NotifyUsers() {
 				log.Printf("Stream %s exists", videos[i].GetId())
 				continue
 			}
-			users, err := s.Db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[i].Channel.Id)).QueryUsers().All(context.Background())
+			users, err := s.Db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[i].ChannelId)).QueryUsers().All(context.Background())
 			if err != nil {
 				log.Printf("Notify error: %v", err)
 				return
 			}
 			for j := range users {
 				c := telebot.ChatID(users[j].TgID)
-				s.TgBot.Send(c, "Test message for channel "+*videos[i].Channel.Id+" and video "+videos[i].GetId()+" and title: "+videos[i].GetTitle())
+				s.TgBot.Send(c, "Test message for channel "+*videos[i].ChannelId+" and video "+videos[i].GetId()+" and title: "+videos[i].GetTitle())
 			}
 		}
 	}
