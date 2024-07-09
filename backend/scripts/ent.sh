@@ -1,5 +1,5 @@
 #!/bin/bash
-prj_name="vtuber-go"
+prj_name="backend"
 context_name=$(basename "$PWD")
 if [[ $context_name != "$prj_name" ]]; then
     echo "Wrong pwd - it should be $prj_name"

@@ -71,6 +71,7 @@ func (s *Service) NotifyUsers() {
 
 func (s *Service) SchedulerGo() {
 	interval := time.Duration(time.Minute * time.Duration(s.TimeStep))
+	counter := 1
 	quit := make(chan int, 1)
 	for {
 		go func() {
@@ -90,5 +91,8 @@ func (s *Service) SchedulerGo() {
 			}
 		}()
 		<-quit
+		if counter > 10 {
+			panic("scheduler restart limit exceeded")
+		}
 	}
 }

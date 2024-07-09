@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  backend:
+    image: ${REGISTRY}/backend:${TAG}
+  frontend:
+    image: ${REGISTRY}/frontend:${TAG}
