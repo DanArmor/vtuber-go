@@ -1,0 +1,27 @@
+server {
+  listen 8000;
+  server_name ${SERVER_NAME};
+
+  resolver 127.0.0.11 valid=10s ipv6=off;
+  
+  location / {
+    set $proxy_target http://frontend:8000;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Url-Scheme $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_pass $proxy_target;
+  }
+  
+  location /api/ {
+    set $proxy_target http://backend:8000;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Url-Scheme $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_pass $proxy_target;
+  }
+
+}

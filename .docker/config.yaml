@@ -1,0 +1,13 @@
+ip: 0.0.0.0
+port: 8000
+base_path:
+driver_name: pgx
+sql_url: changeme
+tg_bot_token: changeme
+expiration_hours: 24
+jwt_secret_key: CHANGEMEfjdsiopfjdispfdijpsdfijpijpsdfijpfdijpsdfijp
+admin_token: changeme
+holodex_api_key: changeme
+debug: false
+time_notify_after: 30
+time_step: 2
