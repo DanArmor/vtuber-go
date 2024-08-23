@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
+
+	_ "time/tzdata"
 
 	"github.com/DanArmor/vtuber-go/ent/reportedstream"
 	"github.com/DanArmor/vtuber-go/ent/vtuber"
@@ -43,8 +46,8 @@ func (s *Service) NotifyUsers() {
 			continue
 		}
 		if now.Add(time.Duration(s.TimeNotifyAfter) * time.Minute).After(*videos[i].AvailableAt) {
-			if videos[i].ChannelId == nil {
-				log.Printf("Notify nil Channel.ID")
+			if videos[i].Channel.Id == nil {
+				log.Println("Notify nil Channel.Id")
 				continue
 			}
 			exist, err := s.Db.ReportedStream.Query().Where(reportedstream.VideoIDEQ(videos[i].GetId())).Exist(context.Background())
@@ -56,15 +59,48 @@ func (s *Service) NotifyUsers() {
 				log.Printf("Stream %s exists", videos[i].GetId())
 				continue
 			}
-			users, err := s.Db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[i].ChannelId)).QueryUsers().All(context.Background())
+			users, err := s.Db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[i].Channel.Id)).QueryUsers().All(context.Background())
 			if err != nil {
 				log.Printf("Notify error: %v", err)
 				return
 			}
 			for j := range users {
-				c := telebot.ChatID(users[j].TgID)
-				s.TgBot.Send(c, "Test message for channel "+*videos[i].ChannelId+" and video "+videos[i].GetId()+" and title: "+videos[i].GetTitle())
+				loc := time.FixedZone("temp-zone", users[j].TimezoneShift*60*60)
+				userChat := telebot.ChatID(users[j].TgID)
+				channelName := videos[i].Channel.EnglishName.Get()
+				if !videos[i].Channel.EnglishName.IsSet() {
+					channelName = videos[i].Channel.Name
+				}
+				msg := telebot.Photo{}
+				msg.File = telebot.FromURL(fmt.Sprintf("https://img.youtube.com/vi/%s/0.jpg", *videos[i].Id))
+				msg.Caption = fmt.Sprintf("Stream of %s wiil begin in <b>~%d</b> minutes\n\nTitle: %s\n\n<a href='https://www.youtube.com/watch?v=%s'>▶️ Stream link</a>\nStart time: <b>%02d:%02d</b> (GMT %+d)",
+					*channelName,
+					int(videos[i].AvailableAt.Sub(now).Minutes()),
+					*videos[i].Title,
+					*videos[i].Id,
+					videos[i].AvailableAt.In(loc).Hour(),
+					videos[i].AvailableAt.In(loc).Minute(),
+					users[j].TimezoneShift,
+				)
+				_, err := s.TgBot.Send(userChat, &msg, telebot.ModeHTML)
+				if err != nil {
+					log.Printf("Can't send notify: %v")
+				}
 			}
+			authorId, err := s.Db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[i].Channel.Id)).FirstID(context.Background())
+			if err != nil {
+				log.Println(err)
+			}
+			err = s.Db.ReportedStream.Create().
+				SetAuthorID(authorId).
+				SetAvailableAt(*videos[i].AvailableAt).
+				SetVideoID(*videos[i].Id).
+				SetVtuberID(authorId).
+				Exec(context.Background())
+			if err != nil {
+				log.Println(err)
+			}
+
 		}
 	}
 }

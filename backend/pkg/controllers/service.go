@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
+	holodex "github.com/DanArmor/go-holodex"
 	"github.com/DanArmor/vtuber-go/ent"
 	"github.com/DanArmor/vtuber-go/pkg/auth"
-	holodex "github.com/watsonindustries/go-holodex"
 	"gopkg.in/telebot.v3"
 )
 

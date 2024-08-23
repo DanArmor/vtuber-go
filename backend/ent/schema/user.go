@@ -20,6 +20,7 @@ func (User) Fields() []ent.Field {
 		field.String("username").Optional(),
 		field.String("language_code").Optional(),
 		field.String("photo_url").Optional(),
+		field.Int("timezone_shift").Optional().Default(0),
 	}
 }
 

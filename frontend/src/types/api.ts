@@ -28,11 +28,23 @@ export type VtuberSelectRequest = {
     vtuber_id: number
 };
 
+export type UserChangeTimezoneRequest = {
+    timezone_shift: number
+}
+
 export type PageMetaInfo = {
     offset: number,
     page_size_req: number,
     page_size_resp: number
 }
+
+export type UserChangeTimezoneResponse = DefaultVtuberGoResult<{
+    timezone_shift: number
+}> & VtuberGoError;
+
+export type UserGetTimezoneResponse = DefaultVtuberGoResult<{
+    timezone_shift: number
+}> & VtuberGoError;
 
 export type AuthResponse = DefaultVtuberGoResult<{
     token: string

@@ -1,4 +1,4 @@
-import { useInitData, useThemeParams } from '@vkruglikov/react-telegram-web-app';
+import { useExpand, useInitData, useThemeParams } from '@vkruglikov/react-telegram-web-app';
 import { ConfigProvider, theme } from 'antd';
 import { DispatchWithoutAction, useEffect, useState } from 'react';
 import useBetaVersion from '../../hooks/useBetaVersion';
@@ -24,6 +24,7 @@ const Main: React.FC<{
     const [activeBtn, setActiveBtn] = useState(true);
     const [showWelcomeBack, setShowWelcomeBack] = useState(true);
 
+    const [isExpanded, expand] = useExpand();
     const [initDataUnsafe, initData] = useInitData();
     const { token } = useSelector(userSelector);
 
@@ -87,6 +88,7 @@ const Main: React.FC<{
         if (!token) {
             dispatch(UserActions.auth.request(initData ?? ""));
         }
+        expand();
     }, []);
     useEffect(() => {
         if (token) {

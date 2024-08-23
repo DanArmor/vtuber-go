@@ -35,17 +35,19 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 	if id == 0 {
-		err := s.Db.User.Create().
+		createdUser, err := s.Db.User.Create().
 			SetTgID(input.User.Id).
 			SetFirstName(input.User.FirstName).
 			SetLastName(input.User.LastName).
 			SetUsername(input.User.Username).
 			SetLanguageCode(input.User.LanguageCode).
-			SetPhotoURL(input.User.PhotoUrl).Exec(context.Background())
+			SetTimezoneShift(0).
+			SetPhotoURL(input.User.PhotoUrl).Save(context.Background())
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"))
 			return
 		}
+		id = createdUser.ID
 	}
 	token, _, err := s.TokenMaker.CreateToken(
 		input,

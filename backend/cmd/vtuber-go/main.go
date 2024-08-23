@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/DanArmor/go-holodex"
 	"github.com/DanArmor/vtuber-go/pkg/auth"
 	"github.com/DanArmor/vtuber-go/pkg/config"
 	"github.com/DanArmor/vtuber-go/pkg/controllers"
@@ -17,7 +18,6 @@ import (
 	"github.com/DanArmor/vtuber-go/pkg/setup"
 	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
-	"github.com/watsonindustries/go-holodex"
 )
 
 type Options struct {
@@ -84,6 +84,8 @@ func main() {
 	}
 	protectedApi.POST("/search", service.SearchVtubers)
 	protectedApi.POST("/select", service.SelectVtuber)
+	protectedApi.POST("/timezone", service.UserChangeTimezone)
+	protectedApi.GET("/timezone", service.UserGetTimezone)
 	protectedApi.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")

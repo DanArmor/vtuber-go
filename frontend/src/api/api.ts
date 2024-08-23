@@ -1,6 +1,6 @@
 import { create } from "apisauce";
 import { CONFIG } from "./../config";
-import { AuthRequest, AuthResponse, VtuberSearchRequest, VtuberSelectRequest } from "../types/api";
+import { AuthRequest, AuthResponse, UserChangeTimezoneRequest, VtuberSearchRequest, VtuberSelectRequest } from "../types/api";
 
 const sauce = create({
   baseURL: CONFIG.BASE_URL,
@@ -33,7 +33,12 @@ const api = {
   vtuberSelectPost: function (params: VtuberSelectRequest) {
     return sauceAuthorized.post("/select", params);
   },
-
+  userChangeTimezonePost: function (params: UserChangeTimezoneRequest) {
+    return sauceAuthorized.post("/timezone", params);
+  },
+  userGetTimezoneGet: function () {
+    return sauceAuthorized.get("/timezone");
+  },
 };
 
 export { api, updateAuthorizationHeader };

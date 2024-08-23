@@ -1,11 +1,21 @@
 import { Avatar, Flex, Switch, Typography } from 'antd';
 import { Vtuber } from '../../types/types';
-import { Divider, ImageViewer, Loading, Modal, Space, Tag } from 'antd-mobile';
-import { useState } from 'react';
+import { Divider, ImageViewer, Loading, Modal, Space, Tag, Slider, Stepper, Button } from 'antd-mobile';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { UserActions } from '../../logic/user/UserSlice';
+import { userSelector } from '../../logic/user/UserSelectors';
+import { useInitData } from '@vkruglikov/react-telegram-web-app';
 
 const UserSettings: React.FC = () => {
 
-    const [shareState, setShareState] = useState(false);
+    const dispatch = useDispatch();
+    const { timezone_shift } = useSelector(userSelector);
+    const [initDataUnsafe, initData] = useInitData();
+
+    useEffect(() => {
+        dispatch(UserActions.timezone_get.request());
+    }, []);
 
     return (
         <Flex gap="middle" vertical>
@@ -16,9 +26,17 @@ const UserSettings: React.FC = () => {
                     borderStyle: 'dashed',
                 }}
             >
-                Statistics
+                Timezone shift from UTC (in hours)
             </Divider>
-            123
+
+            <Stepper
+                max={14}
+                min={-14}
+                value={timezone_shift}
+                onChange={value => {
+                    dispatch(UserActions.timezone_change.request(value));
+                }}
+            />
             <Divider
                 style={{
                     color: '#1677ff',
@@ -26,38 +44,17 @@ const UserSettings: React.FC = () => {
                     borderStyle: 'dashed',
                 }}
             >
-                Settings
+                Advanced (If app doesn't work)
             </Divider>
-            <Space direction='vertical' wrap className='items-start'>
-                <Flex gap="small">
-                    <Switch checked={shareState} onClick={() => {
-                        if(!shareState) {
-                            Modal.show({
-                                title: "Share my profile",
-                                content: "If you turn it on - other users can see your telegram profile in vtuber cards and contact you. It was made for possibility of discovering new users to share interest in vtubers of your choice. Proceed?",
-                                closeOnAction: true,
-                                actions: [
-                                    {
-                                        key: "yes",
-                                        text: "Yes",
-                                        primary: true,
-                                        onClick: () => {setShareState(true);}
-                                    },
-                                    {
-                                        key: "no",
-                                        text: "No",
-                                    }
-                                ]
-    
-                            });
-                        } else {
-                            setShareState(false);
-                        }
-                    }}/>
-                    <Typography.Text type='secondary'> Share my profile in vtuber cards</Typography.Text>
-                </Flex>
-                <Switch />
-            </Space>
+            <Button
+                color='primary'
+                fill='solid'
+                onClick={() => {
+                    dispatch(UserActions.auth.request(initData ?? ""))
+                }}
+            >
+                Get new token
+            </Button>
         </Flex>
     );
 }
