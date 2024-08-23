@@ -26,9 +26,9 @@ const UserSettings: React.FC = () => {
                     borderStyle: 'dashed',
                 }}
             >
-                Timezone shift from UTC (in hours)
+                Timezone shift from UTC (in hours).
             </Divider>
-
+            <Typography>Adjust it to get start time of the stream in a comfortable format</Typography>
             <Stepper
                 max={14}
                 min={-14}
