@@ -73,9 +73,10 @@ time_notify_after - time threshold in minutes after which the notification shoul
 time_step - time step in minutes for check streams time. If you set it to 2 - it will check time of streams every 2 minutes.
 ```
 
-Also don't forget to change backend url in `frontend/src/config.ts` accordingly to your setup.
+Also don't forget to change backend url in `frontend/src/config.ts` accordingly to your setup and setup database params in .env *and* config.yaml.
 
 Also you need to create empty `secrets.ts` file in `frontend/src` directory.
+
 
 ### How to populate data
 
