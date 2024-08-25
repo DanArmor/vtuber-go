@@ -79,7 +79,7 @@ Also you need to create empty `secrets.ts` file in `frontend/src` directory.
 
 ### How to populate data
 
-You can use Holodex API to get data about vtubers:
+You can use Holodex API to get data about vtubers. Example:
 
 ```shell
 curl --request GET \
