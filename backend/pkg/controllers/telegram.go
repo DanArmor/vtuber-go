@@ -127,6 +127,7 @@ func (s *Service) SchedulerGo() {
 			}
 		}()
 		<-quit
+		counter += 1
 		if counter > 10 {
 			panic("scheduler restart limit exceeded")
 		}
