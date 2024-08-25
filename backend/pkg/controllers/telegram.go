@@ -64,6 +64,10 @@ func (s *Service) NotifyUsers() {
 				log.Printf("Notify error: %v", err)
 				return
 			}
+			// We don't want to mark it as 'processed' if no user was notified
+			if len(users) == 0 {
+				continue
+			}
 			for j := range users {
 				loc := time.FixedZone("temp-zone", users[j].TimezoneShift*60*60)
 				userChat := telebot.ChatID(users[j].TgID)
