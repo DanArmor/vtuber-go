@@ -58,7 +58,6 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 
 	b.Handle("/start", func(c telebot.Context) error {
 		err := c.SendAlbum(album, telebot.ModeMarkdownV2)
-		log.Println(err)
 		return err
 	})
 	go func() {
