@@ -11,7 +11,7 @@
 
 Telegram bot that reminds users about streams of selected vtubers.
 
-![message example](/backend/internal/resources/photos/files/1.jpg | width=300)
+![message example](/backend/internal/resources/photos/files/1.jpg)
 
 It has user interface implemented via Telegram Mini App mechanism. You can access it by pressing 'Menu' button in the lower left corner.
 
@@ -23,14 +23,14 @@ Select the streamers whose broadcasts you want to be notified about. You can use
 
 Also in "Show" tab you can hide tags of vtubers and avatars.
 
-![screen example](/backend/internal/resources/photos/files/2.jpg | width=300)
+![screen example](/backend/internal/resources/photos/files/2.jpg)
 
 In "Settings" tab you can select the shift from GMT of your local time to get proper "start time" value. If you didn't select any - it will format start time as GMT +0.
 
-![screen example](/backend/internal/resources/photos/files/3.jpg | width=300)
+![screen example](/backend/internal/resources/photos/files/3.jpg)
 
 Also you can click on streamer in list and got streamer card with links to their accounts on youtube/twitch/twitter and etc.
-![screeb example](/backend/internal/resources/photos/files/4.jpg | width=300)
+![screeb example](/backend/internal/resources/photos/files/4.jpg)
 
 To get help message send `/start` command to the bot.
 
