@@ -26,7 +26,7 @@ services:
   migrate:
     image: arigaio/atlas
     volumes:
-      - ../ent/migrate/migrations:/migrations:ro
+      - ../backend/ent/migrate/migrations:/migrations:ro
     restart: on-failure:5
     command: >
         migrate apply
