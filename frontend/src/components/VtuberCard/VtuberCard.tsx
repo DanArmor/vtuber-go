@@ -75,14 +75,14 @@ const VtuberCard: React.FC<VtuberCardProps> = (props: VtuberCardProps) => {
                                 </Typography.Link>
                             </Typography.Text>
 
-                            <Typography.Text type='secondary'>
+                            {vtuber.twitch && <Typography.Text type='secondary'>
                                 Twitch: <Typography.Link
                                     target='_blank'
                                     href={`https://twitch.com/${vtuber.twitch}`}
                                 >
                                     {vtuber.twitch}
                                 </Typography.Link>
-                            </Typography.Text>
+                            </Typography.Text>}
 
                             <Divider
                                 style={{
