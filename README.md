@@ -3,9 +3,9 @@
 - [About](#about)
 - [Running instance](#running-instance)
 - [How to selfhost](#how-to-selfhost)
-    - [Deploy](#deploy)
-    - [Configuration](#configuration)
-    - [How to populate data](#how-to-populate-data)
+  - [Deploy](#deploy)
+  - [Configuration](#configuration)
+  - [How to populate data](#how-to-populate-data)
 
 ## About
 
@@ -16,6 +16,7 @@ Telegram bot that reminds users about streams of selected vtubers.
 It has user interface implemented via Telegram Mini App mechanism. You can access it by pressing 'Menu' button in the lower left corner.
 
 Select the streamers whose broadcasts you want to be notified about. You can use filters by:
+
 - *name*;
 - *company*;
 - *wave*;
@@ -51,21 +52,24 @@ Sends a notification 30 minutes before the stream.
 ### Deploy
 
 You need 3 things:
+
 - [Holodex API key](https://holodex.net/);
 - [Telegram Bot (its token)](https://t.me/botfather);
-- Server to run on with the access to external users to connect to it (to access web interface. Also you want some domain to got certifciate to run web interface over https).
+- Server to run on with the access to external users to connect to it (to access web interface. Also you want some domain to got certificate to run web interface over https).
 
 When you setuped your server, you need to clone the repo to it, enter `.docker` dir, change .env and config.yaml according to your needs and run:
-```
+
+```bash
 docker compose up -d
 ```
+
 Done - it will build all the images and run the application.
 
 ### Configuration
 
 Clarification of some config.yaml values:
 
-```
+```bash
 base_path - the path after hostname and port to bind backend to.
 expiration_hours - expiration time in hours for jwt token
 admin_token - token for administration endpoints
@@ -75,8 +79,7 @@ time_step - time step in minutes for check streams time. If you set it to 2 - it
 
 Also don't forget to change backend url in `frontend/src/config.ts` accordingly to your setup and setup database params in .env *and* config.yaml.
 
-Also you need to create empty `secrets.ts` file in `frontend/src` directory.
-
+Furthermore, you need to create empty `secrets.ts` file in `frontend/src` directory.
 
 ### How to populate data
 
