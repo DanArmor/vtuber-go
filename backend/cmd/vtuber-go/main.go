@@ -18,20 +18,22 @@ import (
 	"github.com/DanArmor/vtuber-go/pkg/setup"
 	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
+
+	ginzap "github.com/gin-contrib/zap"
+	"go.uber.org/zap"
 )
 
 type Options struct {
 	ConfigPath string `long:"config" description:"Config path (with extension)" required:"true"`
 }
 
-const defaultTrustedProxy = "127.0.0.1:80"
+const defaultTrustedProxy = "127.0.0.1"
 
 func getBaseRouter(router *gin.Engine, basePath string) *gin.RouterGroup {
 	if basePath != "" {
 		return router.Group(basePath)
-	} else {
-		return router.Group("")
 	}
+	return router.Group("")
 }
 
 func main() {
@@ -45,6 +47,17 @@ func main() {
 	if err != nil {
 		panic("Can't load config")
 	}
+
+	cfg := zap.NewDevelopmentConfig()
+
+	logger, err := cfg.Build()
+	if err != nil {
+		panic("Can't create new logger: " + err.Error())
+	}
+
+	zap.ReplaceGlobals(logger)
+
+	zap.L().Info("Service started")
 
 	holodexConfig := holodex.NewConfiguration()
 	holodexConfig.DefaultHeader["X-APIKEY"] = config.HolodexApiKey
@@ -65,9 +78,16 @@ func main() {
 		jwt,
 	)
 
-	router := gin.Default()
+	router := gin.New()
+	// Установим zap в качестве логгера для Gin
+	router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+	router.Use(ginzap.RecoveryWithZap(logger, true))
+	// CORS
 	router.Use(middleware.CORSMiddleware)
-	router.SetTrustedProxies([]string{defaultTrustedProxy})
+
+	if err := router.SetTrustedProxies([]string{defaultTrustedProxy}); err != nil {
+		panic(err)
+	}
 
 	srv := &http.Server{
 		Addr:    config.Ip + ":" + config.Port,
