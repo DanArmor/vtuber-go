@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"io/fs"
 	"log"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"github.com/DanArmor/vtuber-go/ent"
 	"github.com/DanArmor/vtuber-go/internal/resources/photos"
 	"github.com/DanArmor/vtuber-go/pkg/auth"
+	"github.com/DanArmor/vtuber-go/pkg/infrastructure/queue"
+	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 )
 
@@ -22,10 +25,11 @@ type Service struct {
 	TgBot           *telebot.Bot
 	TimeNotifyAfter int
 	TimeStep        int
+	Qm              *queue.QueueManager
 }
 
 func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNotifyAfter int, timeStep int,
-	holodexClient *holodex.APIClient, authMaker auth.Maker) Service {
+	holodexClient *holodex.APIClient, authMaker auth.Maker) *Service {
 	pref := telebot.Settings{
 		Token:  tgBotToken,
 		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
@@ -80,7 +84,8 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 			}
 		}
 	}()
-	return Service{
+
+	s := &Service{
 		Db:              db,
 		TgBotToken:      tgBotToken,
 		ExpirationHours: expirationHours,
@@ -89,5 +94,32 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 		TgBot:           b,
 		TimeNotifyAfter: timeNotifyAfter,
 		TimeStep:        timeStep,
+		Qm:              queue.NewQueueManager(db, zap.L()),
 	}
+
+	var TaskNotifyTelegramUsers queue.Task = queue.Task{
+		RestartPolicy: queue.RestartPolicy{
+			RestartCount:           3,
+			RestartOnError:         true,
+			OnRestartCountExceeded: queue.RestartPolicyError,
+		},
+		FirstStartPolicy: queue.FirstStartPolicySchedule,
+		Interval:         60000,
+		Name:             "notify_telegram_users",
+		Func: func(m map[string]any) error {
+			s.NotifyUsers()
+			return nil
+		},
+	}
+
+	s.Qm.RegisterTask(TaskNotifyTelegramUsers)
+	s.Qm.AddTaskToRunList(queue.AddTaskToRunListInput{
+		Name:             TaskNotifyTelegramUsers.Name,
+		RestartPolicy:    &TaskNotifyTelegramUsers.RestartPolicy,
+		FirstStartPolicy: &TaskNotifyTelegramUsers.FirstStartPolicy,
+		Interval:         &TaskNotifyTelegramUsers.Interval,
+	})
+	go s.Qm.Run(context.Background())
+
+	return s
 }

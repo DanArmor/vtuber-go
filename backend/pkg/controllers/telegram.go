@@ -108,32 +108,3 @@ func (s *Service) NotifyUsers() {
 		}
 	}
 }
-
-func (s *Service) SchedulerGo() {
-	interval := time.Duration(time.Minute * time.Duration(s.TimeStep))
-	counter := 1
-	quit := make(chan int, 1)
-	for {
-		go func() {
-			defer func() {
-				if err := recover(); err != nil {
-					log.Printf("Recovered: %v", err)
-					quit <- 1
-				}
-			}()
-			ticker := time.NewTicker(interval)
-
-			for {
-				select {
-				case <-ticker.C:
-					s.NotifyUsers()
-				}
-			}
-		}()
-		<-quit
-		counter += 1
-		if counter > 10 {
-			panic("scheduler restart limit exceeded")
-		}
-	}
-}
