@@ -40,7 +40,7 @@ func DatabaseSetup(driverName string, sqlURL string) (*ent.Client, error) {
 
 	// Apply migrations
 	err = m.Up()
-	if err != nil {
+	if err != nil && err != migrate.ErrNoChange {
 		panic(err)
 	}
 	zap.L().Info("Migrations applied")

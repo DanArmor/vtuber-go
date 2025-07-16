@@ -37,3 +37,14 @@ ent/migrate/migrations/*
 !ent/generate.go
 !ent/schema/
 !ent/schema/*
+
+!ent/
+!ent/migrate/
+!ent/migrate/main.go
+!ent/migrate/migrations/
+!ent/migrate/migrations/*
+!ent/migrate/migratedata/
+!ent/migrate/migratedata/*
+!ent/generate.go
+!ent/schema/
+!ent/schema/*

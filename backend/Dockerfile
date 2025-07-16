@@ -1,7 +1,7 @@
-FROM docker.io/golang:1.22-alpine AS builder
+FROM docker.io/golang:1.24-alpine AS builder
 
 WORKDIR /data/build
-COPY  . .
+COPY . .
 
 RUN go env -w GOCACHE=/go-cache
 RUN go env -w GOMODCACHE=/gomod-cache
@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/gomod-cache \
 RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache \
   go build -o /data/build/vtuber-go /data/build/cmd/vtuber-go/main.go
 
-FROM docker.io/alpine:3.18
+FROM docker.io/alpine:3.21
 
 ENV SERVICE_DIR=/opt/vtuber-go
 ARG SERVICE_USER=vtuber-go
