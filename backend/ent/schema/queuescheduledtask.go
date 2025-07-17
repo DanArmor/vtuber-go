@@ -15,7 +15,8 @@ type QueueScheduledTask struct {
 // Fields of the QueueScheduledTask.
 func (QueueScheduledTask) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").Unique(),
+		field.String("schedule_name").Unique(),
+		field.String("task_name"),
 		field.Int("interval"),
 		field.Time("last_run_timestamp").Default(time.Now),
 		field.String("status"),

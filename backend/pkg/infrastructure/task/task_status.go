@@ -1,4 +1,4 @@
-package queue
+package task
 
 type TaskStatus string
 
