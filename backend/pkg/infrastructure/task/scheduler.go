@@ -47,6 +47,7 @@ func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
 	}
 }
 
+// TODO add `for update skip locked` ?
 // SchedulerGetTasksToRun returns list of tasks to run at the moment
 func (ts *TaskScheduler) SchedulerGetTasksToRun() []TaskRunRequest {
 	ts.logger.Debug("Check scheduler tasks")
