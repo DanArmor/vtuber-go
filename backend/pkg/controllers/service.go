@@ -7,9 +7,9 @@ import (
 
 	holodex "github.com/DanArmor/go-holodex"
 	"github.com/DanArmor/vtuber-go/ent"
+	"github.com/DanArmor/vtuber-go/internal/infrastructure/auth"
 	"github.com/DanArmor/vtuber-go/internal/infrastructure/task"
 	"github.com/DanArmor/vtuber-go/internal/resources/photos"
-	"github.com/DanArmor/vtuber-go/pkg/auth"
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 )

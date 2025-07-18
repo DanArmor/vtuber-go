@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/DanArmor/vtuber-go/pkg/auth"
+	"github.com/DanArmor/vtuber-go/internal/infrastructure/auth"
 	"github.com/gin-gonic/gin"
 )
 

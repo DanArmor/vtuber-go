@@ -3,7 +3,7 @@ package middleware
 import (
 	"errors"
 
-	"github.com/DanArmor/vtuber-go/pkg/auth"
+	"github.com/DanArmor/vtuber-go/internal/infrastructure/auth"
 	"github.com/gin-gonic/gin"
 )
 

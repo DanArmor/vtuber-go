@@ -11,8 +11,8 @@ import (
 
 	"github.com/DanArmor/go-holodex"
 	"github.com/DanArmor/vtuber-go/internal/config"
+	"github.com/DanArmor/vtuber-go/internal/infrastructure/auth"
 	"github.com/DanArmor/vtuber-go/internal/setup"
-	"github.com/DanArmor/vtuber-go/pkg/auth"
 	"github.com/DanArmor/vtuber-go/pkg/controllers"
 	"github.com/DanArmor/vtuber-go/pkg/middleware"
 	"github.com/gin-gonic/gin"
