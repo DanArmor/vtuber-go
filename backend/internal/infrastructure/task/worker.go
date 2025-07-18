@@ -12,16 +12,18 @@ import (
 
 // TaskWorker - global struct to manage all running tasks.
 type TaskWorker struct {
+	name    string
 	db      *ent.Client
 	taskMap map[string]TaskDescriptor
 	logger  *zap.Logger
 }
 
-func NewTaskWorker(db *ent.Client, logger *zap.Logger) *TaskWorker {
+func NewTaskWorker(name string, db *ent.Client, logger *zap.Logger) *TaskWorker {
 	return &TaskWorker{
+		name:    name,
 		db:      db,
 		taskMap: map[string]TaskDescriptor{},
-		logger:  logger.With(zap.String("Service", "TaskWorker")),
+		logger:  logger.With(zap.String("Service", "TaskWorker"), zap.String("WorkerName", name)),
 	}
 }
 

@@ -140,7 +140,7 @@ func main() {
 
 	entClient := setup.MustDatabaseSetupNoMigrations(config.DriverName, config.SqlUrl)
 
-	worker := task.NewTaskWorker(entClient, zap.L())
+	worker := task.NewTaskWorker("MainWorker", entClient, zap.L())
 
 	holodexController := holodexcontroller.NewHolodexController(config.HolodexApiKey, zap.L())
 	telegramController := telegramcontroller.NewTelegramController(config.TgBotToken, zap.L())
