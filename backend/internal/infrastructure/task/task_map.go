@@ -6,7 +6,7 @@ import (
 
 var glTaskMap = map[string]TaskDescriptor{}
 
-// RegisterTask registers task in global list of available tasks
+// RegisterTask registers task in global list of available tasks.
 func RegisterTask(task TaskDescriptor) {
 	// TODO thing about these global loggers. How to replace this?
 	zap.L().Debug("Register task", zap.String("Task", task.Name))
@@ -14,7 +14,7 @@ func RegisterTask(task TaskDescriptor) {
 }
 
 // getTaskInfo returns task info by task name if exists
-// panic otherwise
+// panic otherwise.
 func getTaskInfo(name string) TaskDescriptor {
 	zap.L().Debug("Get task info", zap.String("Task", name))
 	task, ok := glTaskMap[name]

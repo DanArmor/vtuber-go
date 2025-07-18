@@ -11,12 +11,12 @@ import (
 
 const minSecretKeySize = 32
 
-// JwtMaker is a JSON Web Token maker
+// JwtMaker is a JSON Web Token maker.
 type JwtMaker struct {
 	secretKey string
 }
 
-// NewJwtMaker creates a new JwtMaker
+// NewJwtMaker creates a new JwtMaker.
 func NewJwtMaker(secretKey string) (Maker, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %d characters", minSecretKeySize)
@@ -26,7 +26,7 @@ func NewJwtMaker(secretKey string) (Maker, error) {
 	}, nil
 }
 
-// CreateToken creates a new token for a specific username and duration
+// CreateToken creates a new token for a specific username and duration.
 func (m *JwtMaker) CreateToken(initData types.InitData, userId int, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(initData, userId, duration)
 	if err != nil {
@@ -37,7 +37,7 @@ func (m *JwtMaker) CreateToken(initData types.InitData, userId int, duration tim
 	return token, payload, err
 }
 
-// VerifyToken checks if the token is valid or not
+// VerifyToken checks if the token is valid or not.
 func (m *JwtMaker) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
@@ -48,7 +48,8 @@ func (m *JwtMaker) VerifyToken(token string) (*Payload, error) {
 	}
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
-		verr, ok := err.(*jwt.ValidationError)
+		verr := &jwt.ValidationError{}
+		ok := errors.As(err, &verr)
 		if ok && errors.Is(verr.Inner, ErrExpiredToken) {
 			return nil, ErrExpiredToken
 		}

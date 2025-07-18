@@ -9,10 +9,12 @@ import (
 
 func AdminVerify(adminToken string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-
 		val := c.Request.Header.Get("ADMIN-TOKEN")
 		if val != adminToken {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeWrongAdminToken, "Wrong admin token"))
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				resp.HandlerError(resp.ErrCodeWrongAdminToken, "Wrong admin token"),
+			)
 			return
 		}
 

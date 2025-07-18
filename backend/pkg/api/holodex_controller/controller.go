@@ -2,6 +2,7 @@ package holodexcontroller
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/DanArmor/go-holodex"
@@ -35,7 +36,11 @@ func (hc *HolodexController) GetVtubersUpcomingVideos(vtubers []*ent.Vtuber) []h
 	ids := make([]string, 0, len(vtubers))
 	for i := range vtubers {
 		if vtubers[i].YoutubeChannelID != "" {
-			hc.logger.Debug("Added vtuber to the list", zap.String("ChannelName", vtubers[i].ChannelName), zap.String("ChannelId", vtubers[i].YoutubeChannelID))
+			hc.logger.Debug(
+				"Added vtuber to the list",
+				zap.String("ChannelName", vtubers[i].ChannelName),
+				zap.String("ChannelId", vtubers[i].YoutubeChannelID),
+			)
 			ids = append(ids, vtubers[i].YoutubeChannelID)
 		}
 	}
@@ -53,7 +58,7 @@ func (hc *HolodexController) GetVtubersUpcomingVideos(vtubers []*ent.Vtuber) []h
 		hc.logger.Debug("Video info", zap.String("VideoId", *video.Id), zap.String("ChannelId", *video.Channel.Id))
 	}
 	defer response.Body.Close()
-	if err != nil || response.StatusCode != 200 {
+	if err != nil || response.StatusCode != http.StatusOK {
 		hc.logger.Error("Notify error", zap.Error(err), zap.Int("StatusCode", response.StatusCode))
 		return []holodex.Video{}
 	}

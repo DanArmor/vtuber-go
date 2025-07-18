@@ -23,16 +23,20 @@ func NewTaskScheduler(db *ent.Client, logger *zap.Logger) *TaskScheduler {
 	}
 }
 
-// AddScheduleTaskInput is input for AddTaskToRunList func
+// AddScheduleTaskInput is input for AddTaskToRunList func.
 type AddScheduleTaskInput struct {
 	ScheduleTaskName string // Unique name for this scheduled task
 	TaskName         string // TaskName is task to run (name from task descriptor)
 	Interval         *int   // Interval to run task with
 }
 
-// AddScheduleTask adds task to execution
+// AddScheduleTask adds task to execution.
 func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
-	ts.logger.Debug("Add scheduler task", zap.String("ScheduleTask", input.ScheduleTaskName), zap.String("Task", input.TaskName))
+	ts.logger.Debug(
+		"Add scheduler task",
+		zap.String("ScheduleTask", input.ScheduleTaskName),
+		zap.String("Task", input.TaskName),
+	)
 
 	err := ts.db.QueueScheduledTask.Create().
 		SetScheduleName(input.ScheduleTaskName).
@@ -47,7 +51,7 @@ func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
 }
 
 // TODO add `for update skip locked` ?
-// SchedulerGetTasksToRun returns list of tasks to run at the moment
+// SchedulerGetTasksToRun returns list of tasks to run at the moment.
 func (ts *TaskScheduler) SchedulerGetTasksToRun() []TaskRunRequest {
 	ts.logger.Debug("Check scheduler tasks")
 	pendingTasks, err := ts.db.QueueScheduledTask.Query().Where(
@@ -91,7 +95,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []TaskRunRequest) {
 	}
 }
 
-// Run starts TaskScheduler in infinite loop of check-run tasks
+// Run starts TaskScheduler in infinite loop of check-run tasks.
 func (ts *TaskScheduler) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
 	interval := time.Duration(time.Minute)

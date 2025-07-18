@@ -54,7 +54,9 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			}
 		}
 		var vtuberWave *ent.Wave
-		vtuberWave, err = s.Db.Org.QueryWaves(company).Where(wave.NameEQ(input.Vtubers[i].WaveName)).First(c.Request.Context())
+		vtuberWave, err = s.Db.Org.QueryWaves(company).
+			Where(wave.NameEQ(input.Vtubers[i].WaveName)).
+			First(c.Request.Context())
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))

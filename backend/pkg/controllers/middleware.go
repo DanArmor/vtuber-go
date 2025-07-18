@@ -8,14 +8,20 @@ import (
 )
 
 func (s *Service) CheckToken(c *gin.Context) {
-	token := c.Request.Header.Get("vtubergo-token")
+	token := c.Request.Header.Get("Vtubergo-Token")
 	if token == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeCantValidateInitData, "no token in header of the request"))
+		c.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			resp.HandlerError(resp.ErrCodeCantValidateInitData, "no token in header of the request"),
+		)
 		return
 	}
 	payload, err := s.TokenMaker.VerifyToken(token)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeCantValidateInitData, "can't verify token"))
+		c.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			resp.HandlerError(resp.ErrCodeCantValidateInitData, "can't verify token"),
+		)
 		return
 	}
 	c.Set("token-payload", *payload)

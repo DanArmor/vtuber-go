@@ -16,7 +16,10 @@ import (
 func (s *Service) AuthUser(c *gin.Context) {
 	var input types.InitData
 	if err := c.BindQuery(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeCantBindJsonBody, "Can't bind query string"))
+		c.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			resp.HandlerError(resp.ErrCodeCantBindJsonBody, "Can't bind query string"),
+		)
 		return
 	}
 	if input.User.Id == 0 {
@@ -25,13 +28,19 @@ func (s *Service) AuthUser(c *gin.Context) {
 	}
 	values := c.Request.URL.Query()
 	if err := telegramcontroller.CheckIntegrityInitData(values, s.TgBotToken, s.ExpirationHours); err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Can't validate init data"))
+		c.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			resp.HandlerError(resp.ErrCodeCantValidateInitData, "Can't validate init data"),
+		)
 		return
 	}
 
 	id, err := s.Db.User.Query().Where(user.TgID(input.User.Id)).FirstID(context.Background())
 	if err != nil && !ent.IsNotFound(err) {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"))
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"),
+		)
 		return
 	}
 	if id == 0 {
@@ -44,7 +53,10 @@ func (s *Service) AuthUser(c *gin.Context) {
 			SetTimezoneShift(0).
 			SetPhotoURL(input.User.PhotoUrl).Save(context.Background())
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"))
+			c.AbortWithStatusJSON(
+				http.StatusInternalServerError,
+				resp.HandlerError(resp.ErrCodeCantValidateInitData, "Internal error"),
+			)
 			return
 		}
 		id = createdUser.ID

@@ -70,7 +70,9 @@ func (vgw *VtuberGoWorker) NotifyUsers(m task.TaskInput) error {
 			vgw.logger.Warn("Nil channel id")
 			continue
 		}
-		exist, err := vgw.db.ReportedStream.Query().Where(reportedstream.VideoIDEQ(videos[video_index].GetId())).Exist(context.Background())
+		exist, err := vgw.db.ReportedStream.Query().
+			Where(reportedstream.VideoIDEQ(videos[video_index].GetId())).
+			Exist(context.Background())
 		if err != nil {
 			vgw.logger.Error("ReportedStreams query error", zap.Error(err))
 			return err
@@ -79,10 +81,17 @@ func (vgw *VtuberGoWorker) NotifyUsers(m task.TaskInput) error {
 			vgw.logger.Debug("Stream exists")
 			continue
 		}
-		vgw.logger.Debug("ChannelID for video", zap.String("VideoID", *videos[video_index].Id), zap.String("ChannelId", *videos[video_index].Channel.Id))
+		vgw.logger.Debug(
+			"ChannelID for video",
+			zap.String("VideoID", *videos[video_index].Id),
+			zap.String("ChannelId", *videos[video_index].Channel.Id),
+		)
 		vgw.logger.Debug("Query users for vtuber")
 		// We don't check the len of users, because before that we've queried only vtubers with active users
-		users, err := vgw.db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[video_index].Channel.Id)).QueryUsers().All(context.Background())
+		users, err := vgw.db.Vtuber.Query().
+			Where(vtuber.YoutubeChannelID(*videos[video_index].Channel.Id)).
+			QueryUsers().
+			All(context.Background())
 		if err != nil && !ent.IsNotFound(err) {
 			vgw.logger.Error("Can't query users for vtuber", zap.Error(err))
 			return err
@@ -94,7 +103,9 @@ func (vgw *VtuberGoWorker) NotifyUsers(m task.TaskInput) error {
 		vgw.logger.Debug("Notify users on video in telegram", zap.Int("UsersCount", len(users)))
 		vgw.telegramController.NotifyUsersOnVideo(users, videos[video_index])
 		vgw.logger.Debug("Query authorId")
-		authorId, err := vgw.db.Vtuber.Query().Where(vtuber.YoutubeChannelID(*videos[video_index].Channel.Id)).FirstID(context.Background())
+		authorId, err := vgw.db.Vtuber.Query().
+			Where(vtuber.YoutubeChannelID(*videos[video_index].Channel.Id)).
+			FirstID(context.Background())
 		if err != nil {
 			vgw.logger.Error("Author search error", zap.Error(err))
 			return err
@@ -115,7 +126,6 @@ func (vgw *VtuberGoWorker) NotifyUsers(m task.TaskInput) error {
 }
 
 func main() {
-
 	var options Options
 	parser := flags.NewParser(&options, flags.Default)
 	if _, err := parser.Parse(); err != nil {

@@ -27,7 +27,7 @@ func NewTaskWorker(name string, db *ent.Client, logger *zap.Logger) *TaskWorker 
 	}
 }
 
-// GetTaskToRun returns list of tasks to run at the moment
+// GetTaskToRun returns list of tasks to run at the moment.
 func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
 	ts.logger.Debug("Find task to run")
 	pendingTask, err := ts.db.QueueTask.Query().
@@ -56,7 +56,7 @@ func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
 	}
 }
 
-// Run starts TaskWorker in infinite loop of check-run tasks
+// Run starts TaskWorker in infinite loop of check-run tasks.
 func (ts *TaskWorker) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
 	interval := time.Duration(time.Minute)
@@ -93,7 +93,7 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 	}
 }
 
-// ExecuteTask executes tasks with logs and stuff
+// ExecuteTask executes tasks with logs and stuff.
 func (ts *TaskWorker) ExecuteTask(task *TaskRunRequest) error {
 	ts.logger.Info("Executing task", zap.String("Task", task.Name))
 	currentTaskInfo, err := ts.db.QueueTask.Query().

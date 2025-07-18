@@ -48,7 +48,8 @@ func (tc *TelegramController) NotifyUsersOnVideo(users []*ent.User, video holode
 		}
 		msg := telebot.Photo{}
 		msg.File = telebot.FromURL(fmt.Sprintf("https://img.youtube.com/vi/%s/0.jpg", *video.Id))
-		msg.Caption = fmt.Sprintf("Stream of %s wiil begin in <b>~%d</b> minutes\n\nTitle: %s\n\n<a href='https://www.youtube.com/watch?v=%s'>▶️ Stream link</a>\nStart time: <b>%02d:%02d</b> (GMT %+d)",
+		msg.Caption = fmt.Sprintf(
+			"Stream of %s wiil begin in <b>~%d</b> minutes\n\nTitle: %s\n\n<a href='https://www.youtube.com/watch?v=%s'>▶️ Stream link</a>\nStart time: <b>%02d:%02d</b> (GMT %+d)",
 			*channelName,
 			int(video.AvailableAt.Sub(now).Minutes()),
 			*video.Title,

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Payload contains the payload data of the token
+// Payload contains the payload data of the token.
 type Payload struct {
 	jwt.StandardClaims
 	Id       uuid.UUID      `json:"id"`
@@ -16,7 +16,7 @@ type Payload struct {
 	InitData types.InitData `json:"init_data"`
 }
 
-// NewPayload creates a new token payload with a specific username and duration
+// NewPayload creates a new token payload with a specific username and duration.
 func NewPayload(initData types.InitData, userId int, duration time.Duration) (*Payload, error) {
 	tokenId, err := uuid.NewRandom()
 	if err != nil {
@@ -34,7 +34,7 @@ func NewPayload(initData types.InitData, userId int, duration time.Duration) (*P
 	return payload, nil
 }
 
-// Valid checks if the token payload is valid or not
+// Valid checks if the token payload is valid or not.
 func (p *Payload) Valid() error {
 	if time.Now().Unix() > p.ExpiresAt {
 		return ErrExpiredToken

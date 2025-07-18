@@ -26,10 +26,10 @@ func LoadConfig(configPath string) (c Config, err error) {
 	err = viper.ReadInConfig()
 
 	if err != nil {
-		return
+		return c, err
 	}
 
 	err = viper.Unmarshal(&c)
 
-	return
+	return c, err
 }

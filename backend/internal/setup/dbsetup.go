@@ -2,6 +2,7 @@ package setup
 
 import (
 	"database/sql"
+	"errors"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -40,7 +41,7 @@ func DatabaseSetup(driverName string, sqlURL string, doMigrations bool) (*ent.Cl
 
 		// Apply migrations
 		err = m.Up()
-		if err != nil && err != migrate.ErrNoChange {
+		if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			panic(err)
 		}
 		zap.L().Info("Migrations applied")

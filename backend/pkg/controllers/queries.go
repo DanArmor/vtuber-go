@@ -32,7 +32,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		Org      []int             `json:"orgs"`
 		Wave     []int             `json:"waves"`
 		Selected selected.Selected `json:"selected"`
-		Offset   *int              `json:"offset" binding:"required"`
+		Offset   *int              `json:"offset"    binding:"required"`
 		Limit    int               `json:"page_size" binding:"required"`
 	}
 	var input SearchVtubersInput
@@ -69,13 +69,14 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 			),
 		)
 	}
-	if input.Selected == selected.Yes {
+	switch input.Selected {
+	case selected.Yes:
 		query.Where(
 			vtuber.HasUsersWith(
 				user.IDEQ(userId),
 			),
 		)
-	} else if input.Selected == selected.No {
+	case selected.No:
 		query.Where(
 			vtuber.Not(
 				vtuber.HasUsersWith(
