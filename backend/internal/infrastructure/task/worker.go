@@ -2,12 +2,10 @@ package task
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DanArmor/vtuber-go/ent"
-	"github.com/DanArmor/vtuber-go/ent/queuescheduledtask"
 	"github.com/DanArmor/vtuber-go/ent/queuetask"
 	"go.uber.org/zap"
 )
@@ -48,15 +46,9 @@ func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
 		panic(err)
 	}
 
-	err = pendingTask.Update().
-		SetStatus(string(TaskStatusRunning)).
-		Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
 	ts.logger.Debug("Find task to run. Done", zap.String("TaskName", pendingTask.TaskName))
 	return &TaskRunRequest{
+		ID:   pendingTask.ID,
 		Name: pendingTask.TaskName,
 		Data: pendingTask.Data,
 	}
@@ -73,7 +65,7 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Printf("Recovered: %v", err)
+					ts.logger.Warn("Recovered", zap.Any("error", err))
 					quit <- 1
 				}
 			}()
@@ -82,19 +74,19 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 			for {
 				select {
 				case <-ticker.C:
-					ts.logger.Debug("Queue manager tick start")
+					ts.logger.Debug("TaskWorker tick start")
 					task := ts.GetTaskToRun()
 					if task != nil {
 						ts.ExecuteTask(task) // TODO check return value of error
 					}
-					ts.logger.Debug("Queue manager tick end")
+					ts.logger.Debug("TaskWorker tick end")
 				}
 			}
 		}()
 		<-quit
 		counter += 1
 		if counter > 10 {
-			panic("QueueManager restart limit exceeded")
+			panic("TaskWorker restart limit exceeded")
 		}
 	}
 }
@@ -102,11 +94,9 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 // ExecuteTask executes tasks with logs and stuff
 func (ts *TaskWorker) ExecuteTask(task *TaskRunRequest) error {
 	ts.logger.Info("Executing task", zap.String("Task", task.Name))
-	currentTaskInfo, err := ts.db.QueueScheduledTask.Query().
+	currentTaskInfo, err := ts.db.QueueTask.Query().
 		Where(
-			queuescheduledtask.And(
-				queuescheduledtask.TaskName(task.Name),
-			),
+			queuetask.ID(task.ID),
 		).
 		First(context.Background())
 	if err != nil && !ent.IsNotFound(err) {
@@ -129,8 +119,7 @@ func (ts *TaskWorker) ExecuteTask(task *TaskRunRequest) error {
 
 	// Unlock task
 	err = currentTaskInfo.Update().
-		SetStatus(string(TaskStatusPending)).
-		SetLastRunTimestamp(time.Now()).
+		SetStatus(string(TaskStatusDone)).
 		Exec(context.Background())
 	if err != nil {
 		panic(err)

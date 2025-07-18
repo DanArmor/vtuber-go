@@ -1,4 +1,4 @@
-package utils
+package telegramcontroller
 
 import (
 	"crypto/hmac"

@@ -2,16 +2,14 @@ package controllers
 
 import (
 	"bytes"
-	"context"
 	"io/fs"
-	"log"
 	"time"
 
 	holodex "github.com/DanArmor/go-holodex"
 	"github.com/DanArmor/vtuber-go/ent"
+	"github.com/DanArmor/vtuber-go/internal/infrastructure/task"
 	"github.com/DanArmor/vtuber-go/internal/resources/photos"
 	"github.com/DanArmor/vtuber-go/pkg/auth"
-	"github.com/DanArmor/vtuber-go/pkg/infrastructure/queue"
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 )
@@ -25,7 +23,7 @@ type Service struct {
 	TgBot           *telebot.Bot
 	TimeNotifyAfter int
 	TimeStep        int
-	Qm              *queue.QueueManager
+	Scheduler       *task.TaskScheduler
 }
 
 func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNotifyAfter int, timeStep int,
@@ -37,7 +35,7 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 
 	b, err := telebot.NewBot(pref)
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Fatal("Can't create telegram bot", zap.Error(err))
 	}
 
 	var photoSlice []*telebot.Photo
@@ -71,7 +69,7 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 			go func() {
 				defer func() {
 					if err := recover(); err != nil {
-						log.Printf("Recovered: %v", err)
+						zap.L().Warn("Recovered", zap.Any("error", err))
 						quit <- 1
 					}
 				}()
@@ -85,6 +83,15 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 		}
 	}()
 
+	taskScheduler := task.NewTaskScheduler(db, zap.L())
+
+	interval := 120000
+	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
+		ScheduleTaskName: "notify_telegram_users",
+		TaskName:         "notify_telegram_users",
+		Interval:         &interval,
+	})
+
 	s := &Service{
 		Db:              db,
 		TgBotToken:      tgBotToken,
@@ -94,32 +101,8 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 		TgBot:           b,
 		TimeNotifyAfter: timeNotifyAfter,
 		TimeStep:        timeStep,
-		Qm:              queue.NewQueueManager(db, zap.L()),
+		Scheduler:       taskScheduler,
 	}
-
-	var TaskNotifyTelegramUsers queue.Task = queue.Task{
-		RestartPolicy: queue.RestartPolicy{
-			RestartCount:           3,
-			RestartOnError:         true,
-			OnRestartCountExceeded: queue.RestartPolicyError,
-		},
-		FirstStartPolicy: queue.FirstStartPolicySchedule,
-		Interval:         60000,
-		Name:             "notify_telegram_users",
-		Func: func(m map[string]any) error {
-			s.NotifyUsers()
-			return nil
-		},
-	}
-
-	s.Qm.RegisterTask(TaskNotifyTelegramUsers)
-	s.Qm.AddTaskToRunList(queue.AddTaskToRunListInput{
-		Name:             TaskNotifyTelegramUsers.Name,
-		RestartPolicy:    &TaskNotifyTelegramUsers.RestartPolicy,
-		FirstStartPolicy: &TaskNotifyTelegramUsers.FirstStartPolicy,
-		Interval:         &TaskNotifyTelegramUsers.Interval,
-	})
-	go s.Qm.Run(context.Background())
 
 	return s
 }

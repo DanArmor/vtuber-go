@@ -7,9 +7,9 @@ import (
 
 	"github.com/DanArmor/vtuber-go/ent"
 	"github.com/DanArmor/vtuber-go/ent/user"
+	telegramcontroller "github.com/DanArmor/vtuber-go/pkg/api/telegram_controller"
 	"github.com/DanArmor/vtuber-go/pkg/controllers/resp"
 	"github.com/DanArmor/vtuber-go/pkg/controllers/types"
-	"github.com/DanArmor/vtuber-go/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +24,7 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 	values := c.Request.URL.Query()
-	if err := utils.CheckIntegrityInitData(values, s.TgBotToken, s.ExpirationHours); err != nil {
+	if err := telegramcontroller.CheckIntegrityInitData(values, s.TgBotToken, s.ExpirationHours); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeCantValidateInitData, "Can't validate init data"))
 		return
 	}

@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -83,6 +82,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []TaskRunRequest) {
 		err := ts.db.QueueTask.Create().
 			SetTaskName(task.Name).
 			SetData(task.Data).
+			SetStatus(string(TaskStatusPending)).
 			Exec(context.Background())
 		ts.logger.Debug("Created queue task", zap.String("TaskName", task.Name))
 		if err != nil {
@@ -91,7 +91,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []TaskRunRequest) {
 	}
 }
 
-// Run starts QueueManager in infinite loop of check-run tasks
+// Run starts TaskScheduler in infinite loop of check-run tasks
 func (ts *TaskScheduler) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
 	interval := time.Duration(time.Minute)
@@ -102,7 +102,7 @@ func (ts *TaskScheduler) Run(ctx context.Context) error {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Printf("Recovered: %v", err)
+					ts.logger.Warn("Recovered", zap.Any("error", err))
 					quit <- 1
 				}
 			}()
@@ -111,17 +111,17 @@ func (ts *TaskScheduler) Run(ctx context.Context) error {
 			for {
 				select {
 				case <-ticker.C:
-					ts.logger.Debug("Queue manager tick start")
+					ts.logger.Debug("TaskScheduler tick start")
 					tasks := ts.SchedulerGetTasksToRun()
 					ts.RequestTasksRun(tasks)
-					ts.logger.Debug("Queue manager tick end")
+					ts.logger.Debug("TaskScheduler tick end")
 				}
 			}
 		}()
 		<-quit
 		counter += 1
 		if counter > 10 {
-			panic("QueueManager restart limit exceeded")
+			panic("TaskScheduler restart limit exceeded")
 		}
 	}
 }

@@ -3,13 +3,28 @@ version: "3"
 services:
   backend:
     restart: always
-    build: ../backend
     image: ${REGISTRY}/vtuber-go-backend:${TAG}
     command: ["--config", "./config.yaml"]
     volumes:
       - ./config.yaml:/opt/vtuber-go/config.yaml:ro
     expose:
       - 8000
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"
+  worker:
+    restart: always
+    image: ${REGISTRY}/vtuber-go-worker:${TAG}
+    command: ["--config", "./config.yaml"]
+    volumes:
+      - ./config.yaml:/opt/vtuber-go/config.yaml:ro
+    expose:
+      - 8000
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"
   db:
     image: postgres:15
     environment:
@@ -23,13 +38,20 @@ services:
        interval: 5s
        timeout: 5s
        retries: 5
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"
   frontend:
-    build: ../frontend
     image: ${REGISTRY}/vtuber-go-frontend:${TAG}
     expose:
       - 8000
     environment:
       SERVER_NAME: ${SERVER_NAME}
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"
   gateway:
     image: nginx:latest
     volumes:
@@ -38,3 +60,7 @@ services:
       - 8000:8000
     environment:
       SERVER_NAME: ${SERVER_NAME}
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"

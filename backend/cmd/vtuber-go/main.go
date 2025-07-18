@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,11 +10,11 @@ import (
 	"time"
 
 	"github.com/DanArmor/go-holodex"
+	"github.com/DanArmor/vtuber-go/internal/config"
+	"github.com/DanArmor/vtuber-go/internal/setup"
 	"github.com/DanArmor/vtuber-go/pkg/auth"
-	"github.com/DanArmor/vtuber-go/pkg/config"
 	"github.com/DanArmor/vtuber-go/pkg/controllers"
 	"github.com/DanArmor/vtuber-go/pkg/middleware"
-	"github.com/DanArmor/vtuber-go/pkg/setup"
 	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
 
@@ -114,10 +113,13 @@ func main() {
 	}
 	admin.POST("/vtubers", service.PostVtubers)
 
+	// TODO change run command for scheduler
+	go service.Scheduler.Run(context.Background())
+
 	// Start server
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Printf("Listen: %s\n", err)
+			zap.L().Info("Listen", zap.Error(err))
 		}
 	}()
 
@@ -128,7 +130,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+		zap.L().Fatal("Server forced to shutdown", zap.Error(err))
 	}
-	log.Println("Server exiting")
+	zap.L().Info("Server exiting")
 }
