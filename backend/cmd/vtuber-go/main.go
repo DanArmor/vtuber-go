@@ -59,7 +59,7 @@ func main() {
 	zap.L().Info("Service started")
 
 	holodexConfig := holodex.NewConfiguration()
-	holodexConfig.DefaultHeader["X-APIKEY"] = config.HolodexApiKey
+	holodexConfig.DefaultHeader["X-APIKEY"] = config.HolodexAPIKey
 	holodexConfig.UserAgent = "Vtuber-Go"
 
 	jwt, err := auth.NewJwtMaker(config.JwtSecretKey)
@@ -68,7 +68,7 @@ func main() {
 	}
 
 	service := controllers.NewService(
-		setup.MustDatabaseSetup(config.DriverName, config.SqlUrl),
+		setup.MustDatabaseSetup(config.DriverName, config.SQLURL),
 		config.TgBotToken,
 		config.ExpirationHours,
 		config.TimeNotifyAfter,
@@ -89,7 +89,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:    config.Ip + ":" + config.Port,
+		Addr:    config.IP + ":" + config.Port,
 		Handler: router,
 	}
 	base := getBaseRouter(router, config.BasePath)
@@ -97,15 +97,15 @@ func main() {
 	api := base.Group("/api")
 	api.GET("/auth", service.AuthUser)
 
-	protectedApi := api.Group("")
+	protectedAPI := api.Group("")
 	if !config.IsDebug {
-		protectedApi.Use(service.CheckToken)
+		protectedAPI.Use(service.CheckToken)
 	}
-	protectedApi.POST("/search", service.SearchVtubers)
-	protectedApi.POST("/select", service.SelectVtuber)
-	protectedApi.POST("/timezone", service.UserChangeTimezone)
-	protectedApi.GET("/timezone", service.UserGetTimezone)
-	protectedApi.GET("/orgs", service.GetOrgs)
+	protectedAPI.POST("/search", service.SearchVtubers)
+	protectedAPI.POST("/select", service.SelectVtuber)
+	protectedAPI.POST("/timezone", service.UserChangeTimezone)
+	protectedAPI.GET("/timezone", service.UserGetTimezone)
+	protectedAPI.GET("/orgs", service.GetOrgs)
 
 	admin := api.Group("/admin")
 	if !config.IsDebug {

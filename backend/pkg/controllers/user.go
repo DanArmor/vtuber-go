@@ -11,8 +11,8 @@ import (
 
 func (s *Service) UserGetTimezone(c *gin.Context) {
 	payload := getTokenPayload(c)
-	userId := payload.UserId
-	user, err := s.Db.User.Get(context.Background(), userId)
+	userId := payload.UserID
+	user, err := s.DB.User.Get(context.Background(), userId)
 	if err != nil && !ent.IsNotFound(err) {
 		c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 		return
@@ -35,8 +35,8 @@ func (s *Service) UserChangeTimezone(c *gin.Context) {
 		return
 	}
 	payload := getTokenPayload(c)
-	userId := payload.UserId
-	err := s.Db.User.UpdateOneID(userId).SetTimezoneShift(*input.TimezoneShift).Exec(c.Request.Context())
+	userID := payload.UserID
+	err := s.DB.User.UpdateOneID(userID).SetTimezoneShift(*input.TimezoneShift).Exec(c.Request.Context())
 	if err != nil && !ent.IsNotFound(err) {
 		c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 		return

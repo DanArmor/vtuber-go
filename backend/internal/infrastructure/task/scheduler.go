@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// TaskWorker - global struct to manage all running tasks.
+// TaskScheduler - global struct to manage all running tasks.
 type TaskScheduler struct {
 	db     *ent.Client
 	logger *zap.Logger
@@ -52,7 +52,7 @@ func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
 
 // TODO add `for update skip locked` ?
 // SchedulerGetTasksToRun returns list of tasks to run at the moment.
-func (ts *TaskScheduler) SchedulerGetTasksToRun() []TaskRunRequest {
+func (ts *TaskScheduler) SchedulerGetTasksToRun() []RunRequest {
 	ts.logger.Debug("Check scheduler tasks")
 	pendingTasks, err := ts.db.QueueScheduledTask.Query().Where(
 		queuescheduledtask.And(
@@ -70,9 +70,9 @@ func (ts *TaskScheduler) SchedulerGetTasksToRun() []TaskRunRequest {
 			tasksNamesToExecute = append(tasksNamesToExecute, task.TaskName)
 		}
 	}
-	result := []TaskRunRequest{}
+	result := []RunRequest{}
 	for _, name := range tasksNamesToExecute {
-		result = append(result, TaskRunRequest{
+		result = append(result, RunRequest{
 			Name: name,
 			Data: nil,
 		})
@@ -81,7 +81,7 @@ func (ts *TaskScheduler) SchedulerGetTasksToRun() []TaskRunRequest {
 	return result
 }
 
-func (ts *TaskScheduler) RequestTasksRun(tasks []TaskRunRequest) {
+func (ts *TaskScheduler) RequestTasksRun(tasks []RunRequest) {
 	for _, task := range tasks {
 		err := ts.db.QueueTask.Create().
 			SetTaskName(task.Name).
@@ -98,7 +98,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []TaskRunRequest) {
 // Run starts TaskScheduler in infinite loop of check-run tasks.
 func (ts *TaskScheduler) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
-	interval := time.Duration(time.Minute)
+	interval := time.Minute
 	counter := 1
 	quit := make(chan int, 1)
 
@@ -123,7 +123,7 @@ func (ts *TaskScheduler) Run(ctx context.Context) error {
 			}
 		}()
 		<-quit
-		counter += 1
+		counter++
 		if counter > 10 {
 			panic("TaskScheduler restart limit exceeded")
 		}

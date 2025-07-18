@@ -10,25 +10,25 @@ import (
 	"go.uber.org/zap"
 )
 
-// TaskWorker - global struct to manage all running tasks.
-type TaskWorker struct {
+// Worker - global struct to manage all running tasks.
+type Worker struct {
 	name    string
 	db      *ent.Client
 	taskMap map[string]TaskDescriptor
 	logger  *zap.Logger
 }
 
-func NewTaskWorker(name string, db *ent.Client, logger *zap.Logger) *TaskWorker {
-	return &TaskWorker{
+func NewWorker(name string, db *ent.Client, logger *zap.Logger) *Worker {
+	return &Worker{
 		name:    name,
 		db:      db,
 		taskMap: map[string]TaskDescriptor{},
-		logger:  logger.With(zap.String("Service", "TaskWorker"), zap.String("WorkerName", name)),
+		logger:  logger.With(zap.String("Service", "Worker"), zap.String("Name", name)),
 	}
 }
 
 // GetTaskToRun returns list of tasks to run at the moment.
-func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
+func (ts *Worker) GetTaskToRun() *RunRequest {
 	ts.logger.Debug("Find task to run")
 	pendingTask, err := ts.db.QueueTask.Query().
 		Where(
@@ -49,7 +49,7 @@ func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
 	}
 
 	ts.logger.Debug("Find task to run. Done", zap.String("TaskName", pendingTask.TaskName))
-	return &TaskRunRequest{
+	return &RunRequest{
 		ID:   pendingTask.ID,
 		Name: pendingTask.TaskName,
 		Data: pendingTask.Data,
@@ -57,9 +57,9 @@ func (ts *TaskWorker) GetTaskToRun() *TaskRunRequest {
 }
 
 // Run starts TaskWorker in infinite loop of check-run tasks.
-func (ts *TaskWorker) Run(ctx context.Context) error {
+func (ts *Worker) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
-	interval := time.Duration(time.Minute)
+	interval := time.Minute
 	counter := 1
 	quit := make(chan int, 1)
 
@@ -86,7 +86,7 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 			}
 		}()
 		<-quit
-		counter += 1
+		counter++
 		if counter > 10 {
 			panic("TaskWorker restart limit exceeded")
 		}
@@ -94,7 +94,7 @@ func (ts *TaskWorker) Run(ctx context.Context) error {
 }
 
 // ExecuteTask executes tasks with logs and stuff.
-func (ts *TaskWorker) ExecuteTask(task *TaskRunRequest) error {
+func (ts *Worker) ExecuteTask(task *RunRequest) error {
 	ts.logger.Info("Executing task", zap.String("Task", task.Name))
 	currentTaskInfo, err := ts.db.QueueTask.Query().
 		Where(

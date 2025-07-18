@@ -11,8 +11,8 @@ import (
 // Payload contains the payload data of the token.
 type Payload struct {
 	jwt.StandardClaims
-	Id       uuid.UUID      `json:"id"`
-	UserId   int            `json:"user_id"`
+	ID       uuid.UUID      `json:"id"`
+	UserID   int            `json:"user_id"`
 	InitData types.InitData `json:"init_data"`
 }
 
@@ -23,8 +23,8 @@ func NewPayload(initData types.InitData, userId int, duration time.Duration) (*P
 		return nil, err
 	}
 	payload := &Payload{
-		Id:       tokenId,
-		UserId:   userId,
+		ID:       tokenId,
+		UserID:   userId,
 		InitData: initData,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),

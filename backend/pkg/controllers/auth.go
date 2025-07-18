@@ -22,8 +22,8 @@ func (s *Service) AuthUser(c *gin.Context) {
 		)
 		return
 	}
-	if input.User.Id == 0 {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeNoTgId, "No Tg Id"))
+	if input.User.ID == 0 {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, resp.HandlerError(resp.ErrCodeNoTgID, "No Tg Id"))
 		return
 	}
 	values := c.Request.URL.Query()
@@ -35,7 +35,7 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 
-	id, err := s.Db.User.Query().Where(user.TgID(input.User.Id)).FirstID(context.Background())
+	id, err := s.DB.User.Query().Where(user.TgID(input.User.ID)).FirstID(context.Background())
 	if err != nil && !ent.IsNotFound(err) {
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
@@ -44,14 +44,14 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 	if id == 0 {
-		createdUser, err := s.Db.User.Create().
-			SetTgID(input.User.Id).
+		createdUser, err := s.DB.User.Create().
+			SetTgID(input.User.ID).
 			SetFirstName(input.User.FirstName).
 			SetLastName(input.User.LastName).
 			SetUsername(input.User.Username).
 			SetLanguageCode(input.User.LanguageCode).
 			SetTimezoneShift(0).
-			SetPhotoURL(input.User.PhotoUrl).Save(context.Background())
+			SetPhotoURL(input.User.PhotoURL).Save(context.Background())
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusInternalServerError,

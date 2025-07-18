@@ -12,7 +12,7 @@ const (
 	ErrCodeCantBindJsonBody     = 200
 	ErrCodeCantBindQueryBody    = 201
 	ErrCodeCantValidateInitData = 202
-	ErrCodeNoTgId               = 203
+	ErrCodeNoTgID               = 203
 	// 5xx - Internal Errors.
 	ErrCodeDbError = 500
 )

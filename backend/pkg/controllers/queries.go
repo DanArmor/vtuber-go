@@ -14,7 +14,7 @@ import (
 )
 
 func (s *Service) GetOrgs(c *gin.Context) {
-	orgs, err := s.Db.Org.Query().WithWaves().All(c.Request.Context())
+	orgs, err := s.DB.Org.Query().WithWaves().All(c.Request.Context())
 	if err != nil {
 		if !ent.IsNotFound(err) {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
@@ -25,8 +25,8 @@ func (s *Service) GetOrgs(c *gin.Context) {
 }
 
 func (s *Service) SearchVtubers(c *gin.Context) {
-	const MinPageSize = 10
-	const MaxPageSize = 30
+	const minPageSize = 10
+	const maxPageSize = 30
 	type SearchVtubersInput struct {
 		Name     string            `json:"name"`
 		Org      []int             `json:"orgs"`
@@ -41,15 +41,15 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 		return
 	}
 
-	if input.Limit < MinPageSize || input.Limit > MaxPageSize {
+	if input.Limit < minPageSize || input.Limit > maxPageSize {
 		c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeCantBindJsonBody, "Page size is incorrect"))
 		return
 	}
 
 	payload := getTokenPayload(c)
-	userId := payload.UserId
+	userID := payload.UserID
 
-	query := s.Db.Vtuber.Query()
+	query := s.DB.Vtuber.Query()
 	if input.Name != "" {
 		query.Where(vtuber.EnglishNameContainsFold(input.Name))
 	}
@@ -73,14 +73,14 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 	case selected.Yes:
 		query.Where(
 			vtuber.HasUsersWith(
-				user.IDEQ(userId),
+				user.IDEQ(userID),
 			),
 		)
 	case selected.No:
 		query.Where(
 			vtuber.Not(
 				vtuber.HasUsersWith(
-					user.IDEQ(userId),
+					user.IDEQ(userID),
 				),
 			),
 		)
@@ -90,7 +90,7 @@ func (s *Service) SearchVtubers(c *gin.Context) {
 			wq.WithOrg()
 		}).
 		WithUsers(func(uq *ent.UserQuery) {
-			uq.Where(user.IDEQ(userId)).IDs(c.Request.Context())
+			uq.Where(user.IDEQ(userID)).IDs(c.Request.Context())
 		}).
 		Limit(input.Limit).
 		Offset(*input.Offset).

@@ -1,24 +1,24 @@
 package types
 
 type WebAppUser struct {
-	Id           int    `form:"id"`
+	ID           int    `form:"id"`
 	FirstName    string `form:"first_name"`
 	LastName     string `form:"last_name"`
 	Username     string `form:"username"`
 	LanguageCode string `form:"language_code"`
-	PhotoUrl     string `form:"photo_url"`
+	PhotoURL     string `form:"photo_url"`
 }
 
 type WebAppChat struct {
-	Id       int    `form:"id"`
+	ID       int    `form:"id"`
 	Type     string `form:"type"`
 	Title    string `form:"title"`
 	Username string `form:"username"`
-	PhotoUrl string `form:"photo_url"`
+	PhotoURL string `form:"photo_url"`
 }
 
 type InitData struct {
-	QueryId      string     `form:"query_id"       json:"query_id"`
+	QueryID      string     `form:"query_id"       json:"query_id"`
 	User         WebAppUser `form:"user"           json:"user"`
 	Receiver     WebAppUser `form:"receiver"       json:"receiver"`
 	Chat         WebAppChat `form:"chat"           json:"chat"`

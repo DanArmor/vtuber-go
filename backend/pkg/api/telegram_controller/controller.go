@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	// TZDATA import
 	_ "time/tzdata"
 
 	"github.com/DanArmor/go-holodex"

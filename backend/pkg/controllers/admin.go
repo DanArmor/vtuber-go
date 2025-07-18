@@ -24,7 +24,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 	}
 	vtubers := make([]ent.Vtuber, 0, len(input.Vtubers))
 	for i := range input.Vtubers {
-		vtuberExist, err := s.Db.Vtuber.Query().
+		vtuberExist, err := s.DB.Vtuber.Query().
 			Where(vtuber.EnglishNameEQ(input.Vtubers[i].EnglishName)).
 			Where(vtuber.HasWaveWith(
 				wave.And(
@@ -40,13 +40,13 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			continue
 		}
 		var company *ent.Org
-		company, err = s.Db.Org.Query().Where(org.NameEQ(input.Vtubers[i].CompanyName)).First(c.Request.Context())
+		company, err = s.DB.Org.Query().Where(org.NameEQ(input.Vtubers[i].CompanyName)).First(c.Request.Context())
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 				return
 			} else {
-				company, err = s.Db.Org.Create().SetName(input.Vtubers[i].CompanyName).Save(context.Background())
+				company, err = s.DB.Org.Create().SetName(input.Vtubers[i].CompanyName).Save(context.Background())
 				if err != nil {
 					c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 					return
@@ -54,24 +54,23 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			}
 		}
 		var vtuberWave *ent.Wave
-		vtuberWave, err = s.Db.Org.QueryWaves(company).
+		vtuberWave, err = s.DB.Org.QueryWaves(company).
 			Where(wave.NameEQ(input.Vtubers[i].WaveName)).
 			First(c.Request.Context())
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 				return
-			} else {
-				vtuberWave, err = s.Db.Wave.Create().SetName(input.Vtubers[i].WaveName).SetOrg(company).Save(context.Background())
-				if err != nil {
-					c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
-					return
-				}
+			}
+			vtuberWave, err = s.DB.Wave.Create().SetName(input.Vtubers[i].WaveName).SetOrg(company).Save(context.Background())
+			if err != nil {
+				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
+				return
 			}
 		}
 
-		new_vtuber, err := s.Db.Vtuber.Create().
-			SetYoutubeChannelID(input.Vtubers[i].YoutubeChannelId).
+		newVtuber, err := s.DB.Vtuber.Create().
+			SetYoutubeChannelID(input.Vtubers[i].YoutubeChannelID).
 			SetChannelName(input.Vtubers[i].ChannelName).
 			SetEnglishName(input.Vtubers[i].EnglishName).
 			SetPhotoURL(input.Vtubers[i].PhotoURL).
@@ -90,7 +89,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 			return
 		}
-		vtubers = append(vtubers, *new_vtuber)
+		vtubers = append(vtubers, *newVtuber)
 	}
 
 	c.JSON(http.StatusOK, resp.HandlerResult(gin.H{"vtubers": vtubers}))

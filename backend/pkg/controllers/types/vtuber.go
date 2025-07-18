@@ -1,7 +1,7 @@
 package types
 
 type Vtuber struct {
-	YoutubeChannelId string   `json:"id,omitempty"`
+	YoutubeChannelID string   `json:"id,omitempty"`
 	ChannelName      string   `json:"name,omitempty"`
 	EnglishName      string   `json:"english_name,omitempty"`
 	PhotoURL         string   `json:"photo,omitempty"`

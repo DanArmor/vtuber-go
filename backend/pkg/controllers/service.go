@@ -15,7 +15,7 @@ import (
 )
 
 type Service struct {
-	Db              *ent.Client
+	DB              *ent.Client
 	TgBotToken      string
 	ExpirationHours int
 	HolodexClient   *holodex.APIClient
@@ -93,7 +93,7 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 	})
 
 	s := &Service{
-		Db:              db,
+		DB:              db,
 		TgBotToken:      tgBotToken,
 		ExpirationHours: expirationHours,
 		HolodexClient:   holodexClient,

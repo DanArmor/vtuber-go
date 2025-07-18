@@ -21,11 +21,11 @@ func (s *Service) SelectVtuber(c *gin.Context) {
 		return
 	}
 	payload := getTokenPayload(c)
-	userId := payload.UserId
+	userID := payload.UserID
 
-	exists, err := s.Db.User.Query().
+	exists, err := s.DB.User.Query().
 		Where(user.And(
-			user.IDEQ(userId), user.HasVtubersWith(vtuber.IDEQ(input.VtuberId)),
+			user.IDEQ(userID), user.HasVtubersWith(vtuber.IDEQ(input.VtuberId)),
 		)).
 		Exist(c.Request.Context())
 	if err != nil && !ent.IsNotFound(err) {
@@ -34,14 +34,14 @@ func (s *Service) SelectVtuber(c *gin.Context) {
 	}
 	var selected bool
 	if exists {
-		err := s.Db.User.UpdateOneID(userId).RemoveVtuberIDs(input.VtuberId).Exec(context.Background())
+		err := s.DB.User.UpdateOneID(userID).RemoveVtuberIDs(input.VtuberId).Exec(context.Background())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 			return
 		}
 		selected = false
 	} else {
-		err := s.Db.User.UpdateOneID(userId).AddVtuberIDs(input.VtuberId).Exec(context.Background())
+		err := s.DB.User.UpdateOneID(userID).AddVtuberIDs(input.VtuberId).Exec(context.Background())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 			return
