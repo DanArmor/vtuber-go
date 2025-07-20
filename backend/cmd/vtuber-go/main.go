@@ -113,8 +113,10 @@ func main() {
 	}
 	admin.POST("/vtubers", service.PostVtubers)
 
+	mainContext := context.Background()
+
 	// TODO change run command for scheduler
-	go service.Scheduler.Run(context.Background())
+	go service.Scheduler.Run(mainContext)
 
 	// Start server
 	go func() {
@@ -127,7 +129,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGUSR1, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 	// Stop main server
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(mainContext, 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		zap.L().Fatal("Server forced to shutdown", zap.Error(err))
