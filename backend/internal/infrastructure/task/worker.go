@@ -28,9 +28,9 @@ func NewWorker(name string, db *ent.Client, logger *zap.Logger) *Worker {
 }
 
 // GetTaskToRun returns list of tasks to run at the moment.
-func (ts *Worker) GetTaskToRun() *RunRequest {
-	ts.logger.Debug("Find task to run")
-	pendingTask, err := ts.db.QueueTask.Query().
+func (w *Worker) GetTaskToRun() *RunRequest {
+	w.logger.Debug("Find task to run")
+	pendingTask, err := w.db.QueueTask.Query().
 		Where(
 			queuetask.And(
 				queuetask.Status(string(TaskStatusPending)),
@@ -41,14 +41,14 @@ func (ts *Worker) GetTaskToRun() *RunRequest {
 		).
 		First(context.Background())
 	if err != nil && ent.IsNotFound(err) {
-		ts.logger.Debug("Find task to run. Done. No task")
+		w.logger.Debug("Find task to run. Done. No task")
 		return nil
 	}
 	if err != nil && !ent.IsNotFound(err) {
 		panic(err)
 	}
 
-	ts.logger.Debug("Find task to run. Done", zap.String("TaskName", pendingTask.TaskName))
+	w.logger.Debug("Find task to run. Done", zap.String("TaskName", pendingTask.TaskName))
 	return &RunRequest{
 		ID:   pendingTask.ID,
 		Name: pendingTask.TaskName,
@@ -57,7 +57,7 @@ func (ts *Worker) GetTaskToRun() *RunRequest {
 }
 
 // Run starts TaskWorker in infinite loop of check-run tasks.
-func (ts *Worker) Run(ctx context.Context) error {
+func (w *Worker) Run(ctx context.Context) error {
 	// Vars for runtime behaviour
 	interval := time.Minute
 	counter := 1
@@ -67,7 +67,7 @@ func (ts *Worker) Run(ctx context.Context) error {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
-					ts.logger.Warn("Recovered", zap.Any("error", err))
+					w.logger.Warn("Recovered", zap.Any("error", err))
 					quit <- 1
 				}
 			}()
@@ -76,12 +76,12 @@ func (ts *Worker) Run(ctx context.Context) error {
 			for {
 				select {
 				case <-ticker.C:
-					ts.logger.Debug("TaskWorker tick start")
-					task := ts.GetTaskToRun()
+					w.logger.Debug("TaskWorker tick start")
+					task := w.GetTaskToRun()
 					if task != nil {
-						ts.ExecuteTask(task) // TODO check return value of error
+						w.ExecuteTask(task) // TODO check return value of error
 					}
-					ts.logger.Debug("TaskWorker tick end")
+					w.logger.Debug("TaskWorker tick end")
 				}
 			}
 		}()
@@ -94,9 +94,9 @@ func (ts *Worker) Run(ctx context.Context) error {
 }
 
 // ExecuteTask executes tasks with logs and stuff.
-func (ts *Worker) ExecuteTask(task *RunRequest) error {
-	ts.logger.Info("Executing task", zap.String("Task", task.Name))
-	currentTaskInfo, err := ts.db.QueueTask.Query().
+func (w *Worker) ExecuteTask(task *RunRequest) error {
+	w.logger.Info("Executing task", zap.String("Task", task.Name))
+	currentTaskInfo, err := w.db.QueueTask.Query().
 		Where(
 			queuetask.ID(task.ID),
 		).
@@ -113,19 +113,24 @@ func (ts *Worker) ExecuteTask(task *RunRequest) error {
 	if err != nil {
 		panic(err)
 	}
-	ts.logger.Debug("Executing task. Locked task", zap.String("TaskName", task.Name))
+	w.logger.Debug("Executing task. Locked task", zap.String("TaskName", task.Name))
 
 	taskDescriptor := getTaskInfo(task.Name)
+	taskStatus := TaskStatusDone
 	// Execute task
-	taskDescriptor.Func(task.Data)
+	err = taskDescriptor.Func(task.Data)
+	if err != nil {
+		w.logger.Error("Error during executiong of the taks", zap.String("TaskName", task.Name), zap.Error(err))
+		taskStatus = TaskStatusError
+	}
 
 	// Unlock task
 	err = currentTaskInfo.Update().
-		SetStatus(string(TaskStatusDone)).
+		SetStatus(string(taskStatus)).
 		Exec(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	ts.logger.Debug("Executing task. Unlocked task", zap.String("TaskName", task.Name))
+	w.logger.Debug("Executing task. Unlocked task", zap.String("TaskName", task.Name))
 	return nil
 }
