@@ -19,7 +19,6 @@ func (QueueScheduledTask) Fields() []ent.Field {
 		field.String("task_name"),
 		field.Int("interval"),
 		field.Time("last_run_timestamp").Default(time.Now),
-		field.String("status"),
 	}
 }
 

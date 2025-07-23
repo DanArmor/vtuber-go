@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DanArmor/vtuber-go/ent"
+	"github.com/DanArmor/vtuber-go/ent/queuetask"
 	"github.com/DanArmor/vtuber-go/ent/reportedstream"
 	"github.com/DanArmor/vtuber-go/ent/vtuber"
 	"github.com/DanArmor/vtuber-go/internal/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/DanArmor/vtuber-go/internal/setup"
 	holodexcontroller "github.com/DanArmor/vtuber-go/pkg/api/holodex_controller"
 	telegramcontroller "github.com/DanArmor/vtuber-go/pkg/api/telegram_controller"
+	"github.com/DanArmor/vtuber-go/pkg/utils"
 	"github.com/jessevdk/go-flags"
 	"go.uber.org/zap"
 )
@@ -25,6 +27,37 @@ type VtuberGoWorker struct {
 	telegramController *telegramcontroller.TelegramController
 	db                 *ent.Client
 	logger             *zap.Logger
+}
+
+type CleanTaskInput struct {
+	TaskName string `json:"task_name"`
+	After    int    `json:"after"`
+}
+
+func (vgw *VtuberGoWorker) ExtractCleanTaskInput(content task.TaskInput) (CleanTaskInput, error) {
+	var step CleanTaskInput
+	err := utils.JSONDecode(content, &step)
+	return step, err
+}
+
+func (vgw *VtuberGoWorker) CleanTasks(input task.TaskInput) error {
+	data, err := vgw.ExtractCleanTaskInput(input)
+	if err != nil {
+		panic(err)
+	}
+	_, err = vgw.db.QueueTask.Delete().
+		Where(
+			queuetask.And(
+				queuetask.TaskName(data.TaskName),
+				queuetask.CreatedAtLT(time.Now().Add(time.Duration(-data.After)*time.Millisecond)),
+				queuetask.StatusNotIn(string(task.TaskStatusRunning)),
+			),
+		).
+		Exec(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 func (vgw *VtuberGoWorker) GetVtubersWithActiveUsers() []*ent.Vtuber {
@@ -155,6 +188,10 @@ func main() {
 	task.RegisterTask(task.TaskDescriptor{
 		Name: "notify_telegram_users",
 		Func: vgw.NotifyUsers,
+	})
+	task.RegisterTask(task.TaskDescriptor{
+		Name: "clean_tasks",
+		Func: vgw.CleanTasks,
 	})
 
 	worker.Run(context.Background())

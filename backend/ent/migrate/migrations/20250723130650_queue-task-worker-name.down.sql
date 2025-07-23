@@ -1,0 +1,2 @@
+-- Irreversible
+-- Reasoning: first migration in the app

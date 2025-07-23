@@ -85,11 +85,25 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 
 	taskScheduler := task.NewTaskScheduler(db, zap.L())
 
-	interval := 120000
+	notifyUserInterval := 120000
 	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
 		ScheduleTaskName: "notify_telegram_users",
 		TaskName:         "notify_telegram_users",
-		Interval:         &interval,
+		Interval:         &notifyUserInterval,
+		DataFn:           nil,
+	})
+
+	cleanNotifyTasksInterval := 120000
+	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
+		ScheduleTaskName: "clean_notify_telegram_users",
+		TaskName:         "clean_tasks",
+		Interval:         &cleanNotifyTasksInterval,
+		DataFn: func() task.TaskInput {
+			return task.TaskInput{
+				"task_name": "notify_telegram_users",
+				"after":     3600000,
+			}
+		},
 	})
 
 	s := &Service{

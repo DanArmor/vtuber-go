@@ -15,8 +15,9 @@ type TaskDescriptor struct {
 type RunRequest struct {
 	ID int // Unique id of the task from DB.
 	// ! Worker should have valid value of ID field upon the execution of the task
-	Name string    // Unique name for the task
-	Data TaskInput // Data to run task with
+	Name   string           // Unique name for the task
+	Data   TaskInput        // For worker. Data to run task with
+	DataFn func() TaskInput // For scheduler. To populate data on task creation
 }
 
 // Run is single running task.

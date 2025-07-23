@@ -56,19 +56,42 @@ func (w *Worker) GetTaskToRun() *RunRequest {
 	}
 }
 
+func (w *Worker) CleanStaleJobs(ctx context.Context) error {
+	w.logger.Debug("Cleaning stale jobs")
+	err := w.db.QueueTask.Update().
+		SetStatus(string(TaskStatusInterrupted)).
+		Where(
+			queuetask.And(
+				queuetask.Status(string(TaskStatusRunning)),
+				queuetask.WorkerName(w.name),
+			),
+		).
+		Exec(ctx)
+	w.logger.Debug("Done")
+	return err
+}
+
 // Run starts TaskWorker in infinite loop of check-run tasks.
 func (w *Worker) Run(ctx context.Context) error {
+	// clean stale jobs on startup
+	err := w.CleanStaleJobs(ctx)
+	if err != nil {
+		panic(err)
+	}
 	// Vars for runtime behaviour
 	interval := time.Minute
 	counter := 1
 	quit := make(chan int, 1)
+
+	const CONTINUE_FUNC = 1
+	const TERMINATE_FUNC = 2
 
 	for {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
 					w.logger.Warn("Recovered", zap.Any("error", err))
-					quit <- 1
+					quit <- CONTINUE_FUNC
 				}
 			}()
 			ticker := time.NewTicker(interval)
@@ -82,10 +105,16 @@ func (w *Worker) Run(ctx context.Context) error {
 						w.ExecuteTask(task) // TODO check return value of error
 					}
 					w.logger.Debug("TaskWorker tick end")
+				case <-ctx.Done():
+					quit <- TERMINATE_FUNC
+					return
 				}
 			}
 		}()
-		<-quit
+		status := <-quit
+		if status == TERMINATE_FUNC {
+			return nil
+		}
 		counter++
 		if counter > 10 {
 			panic("TaskWorker restart limit exceeded")
@@ -109,10 +138,24 @@ func (w *Worker) ExecuteTask(task *RunRequest) error {
 	}
 
 	// Lock task
-	err = currentTaskInfo.Update().SetStatus(string(TaskStatusRunning)).Exec(context.Background())
+	err = currentTaskInfo.Update().
+		SetStatus(string(TaskStatusRunning)).
+		SetWorkerName(w.name).
+		Exec(context.Background())
 	if err != nil {
 		panic(err)
 	}
+	defer func() {
+		if err := recover(); err != nil {
+			w.logger.Warn("Recovered", zap.Any("error", err))
+			err = currentTaskInfo.Update().
+				SetStatus(string(TaskStatusError)).
+				Exec(context.Background())
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
 	w.logger.Debug("Executing task. Locked task", zap.String("TaskName", task.Name))
 
 	taskDescriptor := getTaskInfo(task.Name)

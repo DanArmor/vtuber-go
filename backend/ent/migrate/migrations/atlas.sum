@@ -1,4 +1,4 @@
-h1:OnphKjnXTQE9bsrTQJOGttKKXryCPfye5C4fSPWDzhI=
+h1:nGkzCasNKe8ObQda4kU4TRoRTy63HH/0MdjTl6RfLj4=
 20240822191605_init-schema.down.sql h1:EbUsKiLnTsG//gRM9Wi2EewjLMbL0I0eRXU5GYblefc=
 20240822191605_init-schema.up.sql h1:njNPeE6X0OoqatTHf2UanommLLCRJoiLHVTZ1JiwxWA=
 20250714122541_queue.down.sql h1:mKFFKMy9uRM5vTuqM6I/Md4tumVynTUPySmAjupba8A=
@@ -7,4 +7,10 @@ h1:OnphKjnXTQE9bsrTQJOGttKKXryCPfye5C4fSPWDzhI=
 20250717204353_scheduler-names.up.sql h1:/sWsf6rWEqeCScZC9kqGPSpf540sTDH5A1C2BLIWwv4=
 20250717205028_queue-task.down.sql h1:yCpg/kK6Qj4FdNX+Un6gGoam/MdnED4z99cvYKoxy1s=
 20250717205028_queue-task.up.sql h1:Ht3ol3EbY9oSzkcoBdp9hoa8OT5RTmzjDtXOUeA2d4Y=
-20250718113151_queue-task-status.sql h1:/WjbbVJGMeIPmvdmG69wZee3sQhOpPqa4Hf9ui3T/3M=
+20250718113151_queue-task-status.down.sql h1:KYCCm8hEJT+ZvF0ZsFXrorfdOXzBYXph1uZ6OEqzV/U=
+20250718113151_queue-task-status.up.sql h1:6+l/a78xUDityBEke6MeZAtLV/3zmoEvBaaNqehprdY=
+20250723130650_queue-task-worker-name.down.sql h1:uMVJsb3jyDsWV5SQ1TghhldgENTMiYPQKYgoBNyh8ac=
+20250723130650_queue-task-worker-name.up.sql h1:K1OfMG5nrUBE94AZwOXCSFRqDk965hlTp24QoRQJGXQ=
+20250723142747_queueschedule-remove-status.down.sql h1:0RoL4BRutHud7XKaysoEooPfPbQJUuYwv6tGMrJ1fGw=
+20250723142747_queueschedule-remove-status.up.sql h1:4Ont+AZRnVHIpr1ScndTcPsDWR2iOVPMxyOZ686Oy+Q=
+20250723143850_queue-worker-name-fix.sql h1:gsy07S7ZIABXG81b4Aiyr1NvHOz5W3Eu8A2KB9aZ95Q=

@@ -18,6 +18,7 @@ func (QueueTask) Fields() []ent.Field {
 		field.String("task_name"),
 		field.JSON("data", map[string]any{}),
 		field.String("status"),
+		field.String("worker_name").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
 }
