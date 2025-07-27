@@ -93,7 +93,7 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 		DataFn:           nil,
 	})
 
-	cleanNotifyTasksInterval := 120000
+	cleanNotifyTasksInterval := 86400000
 	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
 		ScheduleTaskName: "clean_notify_telegram_users",
 		TaskName:         "clean_tasks",
