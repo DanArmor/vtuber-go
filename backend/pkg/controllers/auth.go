@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -35,7 +34,7 @@ func (s *Service) AuthUser(c *gin.Context) {
 		return
 	}
 
-	id, err := s.DB.User.Query().Where(user.TgID(input.User.ID)).FirstID(context.Background())
+	id, err := s.DB.User.Query().Where(user.TgID(input.User.ID)).FirstID(c.Request.Context())
 	if err != nil && !ent.IsNotFound(err) {
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
@@ -51,7 +50,7 @@ func (s *Service) AuthUser(c *gin.Context) {
 			SetUsername(input.User.Username).
 			SetLanguageCode(input.User.LanguageCode).
 			SetTimezoneShift(0).
-			SetPhotoURL(input.User.PhotoURL).Save(context.Background())
+			SetPhotoURL(input.User.PhotoURL).Save(c.Request.Context())
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusInternalServerError,

@@ -40,7 +40,7 @@ func (vgw *VtuberGoWorker) ExtractCleanTaskInput(content task.TaskInput) (CleanT
 	return step, err
 }
 
-func (vgw *VtuberGoWorker) CleanTasks(input task.TaskInput) error {
+func (vgw *VtuberGoWorker) CleanTasks(ctx context.Context, input task.TaskInput) error {
 	data, err := vgw.ExtractCleanTaskInput(input)
 	if err != nil {
 		panic(err)
@@ -53,17 +53,17 @@ func (vgw *VtuberGoWorker) CleanTasks(input task.TaskInput) error {
 				queuetask.StatusNotIn(string(task.TaskStatusRunning)),
 			),
 		).
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return nil
 }
 
-func (vgw *VtuberGoWorker) GetVtubersWithActiveUsers() []*ent.Vtuber {
+func (vgw *VtuberGoWorker) GetVtubersWithActiveUsers(ctx context.Context) []*ent.Vtuber {
 	vtubers, err := vgw.db.Vtuber.Query().
 		Where(vtuber.HasUsers()).
-		All(context.Background())
+		All(ctx)
 	if err != nil {
 		vgw.logger.Error("Get active vtubers error", zap.Error(err))
 		return nil
@@ -71,11 +71,11 @@ func (vgw *VtuberGoWorker) GetVtubersWithActiveUsers() []*ent.Vtuber {
 	return vtubers
 }
 
-func (vgw *VtuberGoWorker) NotifyUsers(_ task.TaskInput) error {
+func (vgw *VtuberGoWorker) NotifyUsers(ctx context.Context, _ task.TaskInput) error {
 	timeNotifyAfter := 30
-	vtubers := vgw.GetVtubersWithActiveUsers()
+	vtubers := vgw.GetVtubersWithActiveUsers(ctx)
 	vgw.logger.Debug("Got vtubers with active users", zap.Int("VtubersCount", len(vtubers)))
-	videos := vgw.holodexController.GetVtubersUpcomingVideos(vtubers)
+	videos := vgw.holodexController.GetVtubersUpcomingVideos(ctx, vtubers)
 	vgw.logger.Debug("Got vtubers upcoming videos", zap.Int("VideosCount", len(videos)))
 	now := time.Now()
 	for videoIndex := range videos {
@@ -95,7 +95,7 @@ func (vgw *VtuberGoWorker) NotifyUsers(_ task.TaskInput) error {
 		}
 		exist, err := vgw.db.ReportedStream.Query().
 			Where(reportedstream.VideoIDEQ(videos[videoIndex].GetId())).
-			Exist(context.Background())
+			Exist(ctx)
 		if err != nil {
 			vgw.logger.Error("ReportedStreams query error", zap.Error(err))
 			return err
@@ -114,7 +114,7 @@ func (vgw *VtuberGoWorker) NotifyUsers(_ task.TaskInput) error {
 		users, err := vgw.db.Vtuber.Query().
 			Where(vtuber.YoutubeChannelID(*videos[videoIndex].Channel.Id)).
 			QueryUsers().
-			All(context.Background())
+			All(ctx)
 		if err != nil && !ent.IsNotFound(err) {
 			vgw.logger.Error("Can't query users for vtuber", zap.Error(err))
 			return err
@@ -128,7 +128,7 @@ func (vgw *VtuberGoWorker) NotifyUsers(_ task.TaskInput) error {
 		vgw.logger.Debug("Query authorId")
 		authorID, err := vgw.db.Vtuber.Query().
 			Where(vtuber.YoutubeChannelID(*videos[videoIndex].Channel.Id)).
-			FirstID(context.Background())
+			FirstID(ctx)
 		if err != nil {
 			vgw.logger.Error("Author search error", zap.Error(err))
 			return err
@@ -139,7 +139,7 @@ func (vgw *VtuberGoWorker) NotifyUsers(_ task.TaskInput) error {
 			SetAvailableAt(*videos[videoIndex].AvailableAt).
 			SetVideoID(*videos[videoIndex].Id).
 			SetVtuberID(authorID).
-			Exec(context.Background())
+			Exec(ctx)
 		if err != nil {
 			vgw.logger.Error("Reported stream set error", zap.Error(err))
 		}

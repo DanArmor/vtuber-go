@@ -28,7 +28,7 @@ func NewWorker(name string, db *ent.Client, logger *zap.Logger) *Worker {
 }
 
 // GetTaskToRun returns list of tasks to run at the moment.
-func (w *Worker) GetTaskToRun() *RunRequest {
+func (w *Worker) GetTaskToRun(ctx context.Context) *RunRequest {
 	w.logger.Debug("Find task to run")
 	pendingTask, err := w.db.QueueTask.Query().
 		Where(
@@ -39,7 +39,7 @@ func (w *Worker) GetTaskToRun() *RunRequest {
 		ForUpdate(
 			sql.WithLockAction(sql.SkipLocked),
 		).
-		First(context.Background())
+		First(ctx)
 	if err != nil && ent.IsNotFound(err) {
 		w.logger.Debug("Find task to run. Done. No task")
 		return nil
@@ -100,9 +100,9 @@ func (w *Worker) Run(ctx context.Context) error {
 				select {
 				case <-ticker.C:
 					w.logger.Debug("TaskWorker tick start")
-					task := w.GetTaskToRun()
+					task := w.GetTaskToRun(ctx)
 					if task != nil {
-						w.ExecuteTask(task) // TODO check return value of error
+						w.ExecuteTask(ctx, task) // TODO check return value of error
 					}
 					w.logger.Debug("TaskWorker tick end")
 				case <-ctx.Done():
@@ -123,13 +123,13 @@ func (w *Worker) Run(ctx context.Context) error {
 }
 
 // ExecuteTask executes tasks with logs and stuff.
-func (w *Worker) ExecuteTask(task *RunRequest) error {
+func (w *Worker) ExecuteTask(ctx context.Context, task *RunRequest) error {
 	w.logger.Info("Executing task", zap.String("Task", task.Name))
 	currentTaskInfo, err := w.db.QueueTask.Query().
 		Where(
 			queuetask.ID(task.ID),
 		).
-		First(context.Background())
+		First(ctx)
 	if err != nil && !ent.IsNotFound(err) {
 		panic(err)
 	}
@@ -141,7 +141,7 @@ func (w *Worker) ExecuteTask(task *RunRequest) error {
 	err = currentTaskInfo.Update().
 		SetStatus(string(TaskStatusRunning)).
 		SetWorkerName(w.name).
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -150,7 +150,7 @@ func (w *Worker) ExecuteTask(task *RunRequest) error {
 			w.logger.Warn("Recovered", zap.Any("error", err))
 			err = currentTaskInfo.Update().
 				SetStatus(string(TaskStatusError)).
-				Exec(context.Background())
+				Exec(ctx)
 			if err != nil {
 				panic(err)
 			}
@@ -161,7 +161,7 @@ func (w *Worker) ExecuteTask(task *RunRequest) error {
 	taskDescriptor := getTaskInfo(task.Name)
 	taskStatus := TaskStatusDone
 	// Execute task
-	err = taskDescriptor.Func(task.Data)
+	err = taskDescriptor.Func(ctx, task.Data)
 	if err != nil {
 		w.logger.Error("Error during executiong of the taks", zap.String("TaskName", task.Name), zap.Error(err))
 		taskStatus = TaskStatusError
@@ -170,7 +170,7 @@ func (w *Worker) ExecuteTask(task *RunRequest) error {
 	// Unlock task
 	err = currentTaskInfo.Update().
 		SetStatus(string(taskStatus)).
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		panic(err)
 	}

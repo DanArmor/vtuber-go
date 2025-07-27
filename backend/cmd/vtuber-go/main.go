@@ -113,11 +113,10 @@ func main() {
 	}
 	admin.POST("/vtubers", service.PostVtubers)
 
-	mainContext := context.Background()
+	mainContext, mainContextCancelFn := context.WithCancel(context.Background())
 
 	// TODO change run command for scheduler
 	go service.Scheduler.Run(mainContext)
-
 	// Start server
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
@@ -128,6 +127,8 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGUSR1, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
+	// Close main context
+	mainContextCancelFn()
 	// Stop main server
 	ctx, cancel := context.WithTimeout(mainContext, 5*time.Second)
 	defer cancel()

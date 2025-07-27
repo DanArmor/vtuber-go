@@ -31,7 +31,7 @@ func NewHolodexController(apiKey string, logger *zap.Logger) *HolodexController 
 	}
 }
 
-func (hc *HolodexController) GetVtubersUpcomingVideos(vtubers []*ent.Vtuber) []holodex.Video {
+func (hc *HolodexController) GetVtubersUpcomingVideos(ctx context.Context, vtubers []*ent.Vtuber) []holodex.Video {
 	hc.logger.Debug("Getting vtubers upcoming videos")
 	ids := make([]string, 0, len(vtubers))
 	for i := range vtubers {
@@ -47,7 +47,7 @@ func (hc *HolodexController) GetVtubersUpcomingVideos(vtubers []*ent.Vtuber) []h
 	queryParam := strings.Join(ids, ",")
 	hc.logger.Debug("queryParam", zap.String("param", queryParam))
 
-	request := hc.client.DefaultApi.GetCachedLive(context.Background()).Channels(queryParam)
+	request := hc.client.DefaultApi.GetCachedLive(ctx).Channels(queryParam)
 
 	videos, response, err := hc.client.DefaultApi.GetCachedLiveExecute(request)
 	for _, video := range videos {

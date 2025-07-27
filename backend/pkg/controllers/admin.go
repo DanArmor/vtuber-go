@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/DanArmor/vtuber-go/ent"
@@ -46,7 +45,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 				return
 			} else {
-				company, err = s.DB.Org.Create().SetName(input.Vtubers[i].CompanyName).Save(context.Background())
+				company, err = s.DB.Org.Create().SetName(input.Vtubers[i].CompanyName).Save(c.Request.Context())
 				if err != nil {
 					c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 					return
@@ -62,7 +61,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 				return
 			}
-			vtuberWave, err = s.DB.Wave.Create().SetName(input.Vtubers[i].WaveName).SetOrg(company).Save(context.Background())
+			vtuberWave, err = s.DB.Wave.Create().SetName(input.Vtubers[i].WaveName).SetOrg(company).Save(c.Request.Context())
 			if err != nil {
 				c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 				return
@@ -84,7 +83,7 @@ func (s *Service) PostVtubers(c *gin.Context) {
 			SetBannerURL(input.Vtubers[i].BannerURL).
 			SetDescription(input.Vtubers[i].Description).
 			SetWave(vtuberWave).
-			Save(context.Background())
+			Save(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusBadRequest, resp.HandlerError(resp.ErrCodeDbError, err.Error()))
 			return

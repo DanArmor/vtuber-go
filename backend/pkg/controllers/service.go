@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"io/fs"
 	"time"
 
@@ -84,9 +85,9 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 	}()
 
 	taskScheduler := task.NewTaskScheduler(db, zap.L())
-
+	ctx := context.Background()
 	notifyUserInterval := 120000
-	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
+	taskScheduler.AddScheduleTask(ctx, task.AddScheduleTaskInput{
 		ScheduleTaskName: "notify_telegram_users",
 		TaskName:         "notify_telegram_users",
 		Interval:         &notifyUserInterval,
@@ -94,7 +95,7 @@ func NewService(db *ent.Client, tgBotToken string, expirationHours int, timeNoti
 	})
 
 	cleanNotifyTasksInterval := 86400000
-	taskScheduler.AddScheduleTask(task.AddScheduleTaskInput{
+	taskScheduler.AddScheduleTask(ctx, task.AddScheduleTaskInput{
 		ScheduleTaskName: "clean_notify_telegram_users",
 		TaskName:         "clean_tasks",
 		Interval:         &cleanNotifyTasksInterval,

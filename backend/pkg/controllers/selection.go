@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/DanArmor/vtuber-go/ent"
@@ -34,14 +33,14 @@ func (s *Service) SelectVtuber(c *gin.Context) {
 	}
 	var selected bool
 	if exists {
-		err := s.DB.User.UpdateOneID(userID).RemoveVtuberIDs(input.VtuberId).Exec(context.Background())
+		err := s.DB.User.UpdateOneID(userID).RemoveVtuberIDs(input.VtuberId).Exec(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 			return
 		}
 		selected = false
 	} else {
-		err := s.DB.User.UpdateOneID(userID).AddVtuberIDs(input.VtuberId).Exec(context.Background())
+		err := s.DB.User.UpdateOneID(userID).AddVtuberIDs(input.VtuberId).Exec(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 			return

@@ -35,7 +35,7 @@ type AddScheduleTaskInput struct {
 }
 
 // AddScheduleTask adds task to execution.
-func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
+func (ts *TaskScheduler) AddScheduleTask(ctx context.Context, input AddScheduleTaskInput) {
 	ts.logger.Debug(
 		"Add scheduler task",
 		zap.String("ScheduleTask", input.ScheduleTaskName),
@@ -56,7 +56,7 @@ func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
 				us.SetIgnore(queuescheduledtask.FieldLastRunTimestamp)
 			}),
 		).
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -69,9 +69,9 @@ func (ts *TaskScheduler) AddScheduleTask(input AddScheduleTaskInput) {
 
 // TODO add `for update skip locked` ?
 // SchedulerGetTasksToRun returns list of tasks to run at the moment.
-func (ts *TaskScheduler) SchedulerGetTasksToRun() []RunRequest {
+func (ts *TaskScheduler) SchedulerGetTasksToRun(ctx context.Context) []RunRequest {
 	ts.logger.Debug("Check scheduler tasks")
-	pendingTasks, err := ts.db.QueueScheduledTask.Query().All(context.Background())
+	pendingTasks, err := ts.db.QueueScheduledTask.Query().All(ctx)
 	if err != nil && !ent.IsNotFound(err) {
 		panic(err)
 	}
@@ -95,13 +95,13 @@ func (ts *TaskScheduler) SchedulerGetTasksToRun() []RunRequest {
 	return result
 }
 
-func (ts *TaskScheduler) RequestTasksRun(tasks []RunRequest) {
+func (ts *TaskScheduler) RequestTasksRun(ctx context.Context, tasks []RunRequest) {
 	for _, task := range tasks {
 		runningTasksCount, err := ts.db.QueueTask.Query().
 			Where(
 				queuetask.StatusIn(string(TaskStatusRunning), string(TaskStatusPending)),
 			).
-			Count(context.Background())
+			Count(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -118,7 +118,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []RunRequest) {
 			SetTaskName(task.Name).
 			SetStatus(string(TaskStatusPending)).
 			SetData(data).
-			Exec(context.Background())
+			Exec(ctx)
 		ts.logger.Debug("Created queue task", zap.String("TaskName", task.Name))
 		if err != nil {
 			panic(err)
@@ -126,7 +126,7 @@ func (ts *TaskScheduler) RequestTasksRun(tasks []RunRequest) {
 		err = ts.db.QueueScheduledTask.Update().
 			SetLastRunTimestamp(time.Now()).
 			Where(queuescheduledtask.TaskName(task.Name)).
-			Exec(context.Background())
+			Exec(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -140,12 +140,15 @@ func (ts *TaskScheduler) Run(ctx context.Context) error {
 	counter := 1
 	quit := make(chan int, 1)
 
+	const CONTINUE_FUNC = 1
+	const TERMINATE_FUNC = 2
+
 	for {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
 					ts.logger.Warn("Recovered", zap.Any("error", err))
-					quit <- 1
+					quit <- CONTINUE_FUNC
 				}
 			}()
 			ticker := time.NewTicker(interval)
@@ -154,13 +157,19 @@ func (ts *TaskScheduler) Run(ctx context.Context) error {
 				select {
 				case <-ticker.C:
 					ts.logger.Debug("TaskScheduler tick start")
-					tasks := ts.SchedulerGetTasksToRun()
-					ts.RequestTasksRun(tasks)
+					tasks := ts.SchedulerGetTasksToRun(ctx)
+					ts.RequestTasksRun(ctx, tasks)
 					ts.logger.Debug("TaskScheduler tick end")
+				case <-ctx.Done():
+					quit <- TERMINATE_FUNC
+					return
 				}
 			}
 		}()
-		<-quit
+		status := <-quit
+		if status == TERMINATE_FUNC {
+			return nil
+		}
 		counter++
 		if counter > 10 {
 			panic("TaskScheduler restart limit exceeded")

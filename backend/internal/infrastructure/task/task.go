@@ -3,7 +3,7 @@ package task
 import "context"
 
 type TaskInput map[string]any
-type TaskFn func(TaskInput) error
+type TaskFn func(context.Context, TaskInput) error
 
 // TaskDescriptor is description of task to run.
 type TaskDescriptor struct {

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/DanArmor/vtuber-go/ent"
@@ -12,7 +11,7 @@ import (
 func (s *Service) UserGetTimezone(c *gin.Context) {
 	payload := getTokenPayload(c)
 	userId := payload.UserID
-	user, err := s.DB.User.Get(context.Background(), userId)
+	user, err := s.DB.User.Get(c.Request.Context(), userId)
 	if err != nil && !ent.IsNotFound(err) {
 		c.JSON(http.StatusInternalServerError, resp.HandlerError(resp.ErrCodeDbError, "Internal error"))
 		return
