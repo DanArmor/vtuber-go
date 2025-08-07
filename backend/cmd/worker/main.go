@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DanArmor/vtuber-go/ent"
+	"github.com/DanArmor/vtuber-go/ent/predicate"
 	"github.com/DanArmor/vtuber-go/ent/queuetask"
 	"github.com/DanArmor/vtuber-go/ent/reportedstream"
 	"github.com/DanArmor/vtuber-go/ent/vtuber"
@@ -45,12 +46,14 @@ func (vgw *VtuberGoWorker) CleanTasks(ctx context.Context, input task.TaskInput)
 	if err != nil {
 		panic(err)
 	}
+	queueTaskQueryPredicates := []predicate.QueueTask{queuetask.CreatedAtLT(time.Now().Add(time.Duration(-data.After) * time.Millisecond)), queuetask.StatusNotIn(string(task.TaskStatusRunning))}
+	if data.TaskName != "*" {
+		queueTaskQueryPredicates = append(queueTaskQueryPredicates, queuetask.TaskName(data.TaskName))
+	}
 	_, err = vgw.db.QueueTask.Delete().
 		Where(
 			queuetask.And(
-				queuetask.TaskName(data.TaskName),
-				queuetask.CreatedAtLT(time.Now().Add(time.Duration(-data.After)*time.Millisecond)),
-				queuetask.StatusNotIn(string(task.TaskStatusRunning)),
+				queueTaskQueryPredicates...,
 			),
 		).
 		Exec(ctx)
